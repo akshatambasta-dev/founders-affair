@@ -1,117 +1,103 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 
-/** Oversized wordmark; the words reveal in sequence and drift apart on scroll. */
+const loop = [
+  {
+    label: "01 / DECISION",
+    title: "Make the call.",
+    copy: "A team decision sets the company in motion.",
+    path: "M12 112 C48 102 55 124 88 91 S137 93 166 61 S210 70 246 36 S294 53 338 18",
+  },
+  {
+    label: "02 / MARKET",
+    title: "Read the room.",
+    copy: "The simulated market responds to what the company does.",
+    path: "M12 112 C43 124 59 73 91 86 S141 113 170 70 S211 84 248 48 S293 70 338 18",
+  },
+  {
+    label: "03 / RESPONSE",
+    title: "Move together.",
+    copy: "The team sees the result, then chooses its next move.",
+    path: "M12 112 C42 92 59 110 89 78 S135 86 170 56 S210 65 248 31 S297 47 338 18",
+  },
+];
+
+/** Immediate brand-first hero with an interactive view of the simulation loop. */
 export function Hero() {
-  const ref = useRef<HTMLElement>(null);
-  const w1 = useRef<HTMLSpanElement>(null);
-  const w2 = useRef<HTMLSpanElement>(null);
-  const sub = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current!;
-    // The intro is intentionally omitted from the landing page, so reveal the
-    // headline immediately instead of waiting for its event or a long fallback.
-    el.classList.add("is-in");
-
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let raf = 0;
-    const on = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        if (reduce) return;
-        const h = el.offsetHeight || 1;
-        const p = Math.min(1, Math.max(0, window.scrollY / h));
-        if (w1.current) w1.current.style.transform = `translate3d(${-p * 18}vw, ${p * 30}vh, 0)`;
-        if (w2.current) w2.current.style.transform = `translate3d(${p * 12}vw, ${p * 12}vh, 0)`;
-        if (sub.current) {
-          sub.current.style.transform = `translate3d(0, ${p * -60}px, 0)`;
-          sub.current.style.opacity = String(1 - p * 1.6);
-        }
-      });
-    };
-    window.addEventListener("scroll", on, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", on);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+  const [active, setActive] = useState(0);
+  const step = loop[active];
 
   return (
-    <section
-      id="top"
-      ref={ref}
-      className="theme-dark relative flex min-h-[100svh] flex-col overflow-hidden px-5 pb-8 pt-24 md:px-10 md:pt-28"
-    >
-      <div
-        className="fade-up mx-auto grid w-full max-w-[1600px] grid-cols-2 label-mono text-ink-muted"
-        style={{ transitionDelay: "180ms" }}
-      >
-        <span>(Two-day business simulation)</span>
-        <span className="text-right">Teams of five</span>
-      </div>
-
-      <h1 className="font-display-x mx-auto mt-8 flex w-full max-w-[1600px] flex-1 flex-col justify-center text-ink">
-        <span className="sr-only">Founder&apos;s Affair</span>
-        <span ref={w1} className="block will-change-transform" aria-hidden="true">
-          <span className="reveal-line text-[19vw] md:text-[15.5vw]">
-            <span>Founder&apos;s</span>
-          </span>
-        </span>
-        <span ref={w2} className="block self-end will-change-transform" aria-hidden="true">
-          <span className="reveal-line text-[19vw] md:text-[15.5vw]">
-            <span style={{ transitionDelay: "140ms" }}>
-              <em className="font-sans font-normal italic normal-case tracking-tight text-ink-accent">
-                a
-              </em>
-              ffair
-            </span>
-          </span>
-        </span>
-      </h1>
-
-      <div
-        ref={sub}
-        className="mx-auto mt-10 grid w-full max-w-[1600px] grid-cols-12 items-end gap-5"
-      >
-        <div className="col-span-12 md:col-span-5">
-          <p
-            className="fade-up label-mono mb-3 text-ink-accent"
-            style={{ transitionDelay: "260ms" }}
-          >
-            Build it. Run it. Move it. Sell it. Fund it.
-          </p>
-          <p
-            className="fade-up max-w-xl text-lg leading-snug text-ink-2"
-            style={{ transitionDelay: "340ms" }}
-          >
-            Teams of five take C-suite roles and spend two days building, deciding, surviving
-            crises, moving their stock, and convincing investors to fund them.
-          </p>
+    <section id="top" className="theme-dark fa-hero">
+      <div className="fa-hero__frame">
+        <div className="fa-hero__eyebrow label-mono">
+          <span>Founder&apos;s Affair</span>
+          <span className="fa-live"><i aria-hidden="true" /> Two-day business simulation</span>
         </div>
-        <a
-          href="#how"
-          className="label-mono fade-up col-span-6 hidden items-center gap-2 text-ink-muted md:col-span-3 md:flex"
-          style={{ transitionDelay: "420ms" }}
-        >
-          <span className="animate-cue">↓</span> Follow the journey
-        </a>
-        <div
-          className="fade-up col-span-12 flex flex-wrap gap-3 md:col-span-4 md:justify-end"
-          style={{ transitionDelay: "400ms" }}
-        >
-          <a
-            href="#experiences"
-            className="label-mono rounded-full border border-line-strong px-6 py-3.5 text-ink transition-colors hover:border-ink hover:bg-ink hover:text-base"
-          >
-            Explore the simulation →
-          </a>
-          <a
-            href="#contact"
-            data-cursor="cta"
-            className="label-mono rounded-full bg-copper px-6 py-3.5 text-on-accent transition-colors hover:bg-ink"
-          >
-            Register interest
-          </a>
+
+        <div className="fa-hero__main">
+          <div className="fa-hero__copy">
+            <p className="fa-kicker label-mono"><span>01</span> The company is yours to run</p>
+            <h1 className="fa-hero__title">
+              Founder&apos;s
+              <br />
+              <em>Affair.</em>
+            </h1>
+            <p className="fa-hero__description">
+              Teams of five take C-suite roles and spend two days building, deciding, surviving
+              crises, moving their stock, and convincing investors to fund them.
+            </p>
+            <div className="fa-hero__actions">
+              <a href="#how" className="fa-button fa-button--copper" data-cursor="cta">
+                Enter the simulation <span aria-hidden="true">↗</span>
+              </a>
+              <a href="#about" className="fa-text-link">See how it works <span aria-hidden="true">↓</span></a>
+            </div>
+          </div>
+
+          <div className="fa-instrument" aria-label="Interactive simulation feedback loop">
+            <div className="fa-instrument__top label-mono">
+              <span>Simulation loop</span>
+              <span>Day 01 — Day 02</span>
+            </div>
+            <div className="fa-instrument__visual" aria-hidden="true">
+              <div className="fa-orbit fa-orbit--outer" />
+              <div className="fa-orbit fa-orbit--inner" />
+              <div className="fa-orbit__core"><span>FA</span></div>
+              <span className="fa-orbit__node fa-orbit__node--one">DECIDE</span>
+              <span className="fa-orbit__node fa-orbit__node--two">BUILD</span>
+              <span className="fa-orbit__node fa-orbit__node--three">PITCH</span>
+              <svg className="fa-signal" viewBox="0 0 350 132" fill="none" role="presentation">
+                <path className="fa-signal__baseline" d="M5 120H345" />
+                <path key={active} className="fa-signal__line" pathLength="1" d={step.path} />
+                <circle className="fa-signal__dot" cx="338" cy="18" r="5" />
+              </svg>
+            </div>
+            <div className="fa-instrument__readout" aria-live="polite" aria-atomic="true">
+              <span className="label-mono">{step.label}</span>
+              <strong>{step.title}</strong>
+              <p>{step.copy}</p>
+            </div>
+            <div className="fa-instrument__steps" role="group" aria-label="Choose a simulation step">
+              {loop.map((item, i) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  aria-pressed={active === i}
+                  aria-label={`Show ${item.label.toLowerCase()}`}
+                  onClick={() => setActive(i)}
+                >
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <i aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="fa-hero__footer label-mono">
+          <span>Build it. Run it. Move it. Sell it. Fund it.</span>
+          <a href="#how"><span className="fa-scroll-dot" /> Scroll to explore</a>
+          <span className="fa-hero__index">01 <i /> 08</span>
         </div>
       </div>
     </section>
