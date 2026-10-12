@@ -11,51 +11,51 @@
  * tokens only; primitives exist so semantic aliases can reference them.
  * ========================================================================= */
 :root {
-  /* 01 Emerald / Brand */
-  --emerald-50: #eef6f2;
-  --emerald-100: #d1e6dc;
-  --emerald-200: #b5d6c7;
-  --emerald-300: #93beac;
-  --emerald-400: #71a692;
-  --emerald-500: #4f8f78;
-  --emerald-600: #3e725f;
+  /* Brand palette: use only the six colors from the supplied swatches. */
+  --emerald-50: #2e5748;
+  --emerald-100: #ede7d9;
+  --emerald-200: #2e5748;
+  --emerald-300: #2e5748;
+  --emerald-400: #0b3d2e;
+  --emerald-500: #0b3d2e;
+  --emerald-600: #0b3d2e;
   --emerald-700: #2e5748;
   --emerald-800: #0b3d2e;
-  --emerald-900: #06241b;
+  --emerald-900: #0a0a0a;
 
   /* 02 Copper / Accent */
-  --copper-50: #fbf3ec;
-  --copper-100: #f3dfcf;
-  --copper-200: #ebcbb3;
-  --copper-300: #dbad90;
-  --copper-400: #ca906d;
+  --copper-50: #ede7d9;
+  --copper-100: #ede7d9;
+  --copper-200: #b8734a;
+  --copper-300: #b8734a;
+  --copper-400: #b8734a;
   --copper-500: #b8734a;
-  --copper-600: #a1613c;
-  --copper-700: #8a4f2e;
-  --copper-800: #633820;
-  --copper-900: #3f2212;
+  --copper-600: #b8734a;
+  --copper-700: #b8734a;
+  --copper-800: #1f1f1f;
+  --copper-900: #0a0a0a;
 
   /* 03 Grey / Neutrals */
-  --grey-50: #f8f5ee;
+  --grey-50: #ede7d9;
   --grey-100: #ede7d9; /* Ivory */
-  --grey-200: #d6d0c3;
-  --grey-300: #bfb9ad;
-  --grey-400: #a8a398;
-  --grey-500: #87837b;
-  --grey-600: #68655f;
-  --grey-700: #4a4844;
+  --grey-200: #ede7d9;
+  --grey-300: #ede7d9;
+  --grey-400: #2e5748;
+  --grey-500: #2e5748;
+  --grey-600: #1f1f1f;
+  --grey-700: #1f1f1f;
   --grey-800: #1f1f1f; /* Charcoal */
   --grey-900: #0a0a0a; /* Deep Black */
 
   /* 04 Status */
-  --success-50: #edf9f1; --success-100: #cbeed7; --success-200: #a7e3be; --success-300: #84d1a0; --success-400: #5fc083;
-  --success-500: #2fae66; --success-600: #218e52; --success-700: #14703f; --success-800: #0d5430; --success-900: #073a21;
-  --warning-50: #fef8e6; --warning-100: #fdecba; --warning-200: #fbe08a; --warning-300: #f5cc6c; --warning-400: #efb74a;
-  --warning-500: #e8a317; --warning-600: #c0800e; --warning-700: #9a5f06; --warning-800: #714504; --warning-900: #4a2c02;
-  --error-50: #fef0ef; --error-100: #fbd3cf; --error-200: #f6b5b0; --error-300: #f1938a; --error-400: #ea6e65;
-  --error-500: #e0443e; --error-600: #c1342e; --error-700: #a3231f; --error-800: #771916; --error-900: #4d100e;
-  --info-50: #eef4fe; --info-100: #d0e0fb; --info-200: #b3ccf7; --info-300: #8cb4f2; --info-400: #659bed;
-  --info-500: #3b82e6; --info-600: #2c68c7; --info-700: #1f4fa8; --info-800: #173a7d; --info-900: #0f2754;
+  --success-50: #2e5748; --success-100: #2e5748; --success-200: #2e5748; --success-300: #2e5748; --success-400: #2e5748;
+  --success-500: #0b3d2e; --success-600: #0b3d2e; --success-700: #0b3d2e; --success-800: #0a0a0a; --success-900: #0a0a0a;
+  --warning-50: #ede7d9; --warning-100: #ede7d9; --warning-200: #b8734a; --warning-300: #b8734a; --warning-400: #b8734a;
+  --warning-500: #b8734a; --warning-600: #b8734a; --warning-700: #1f1f1f; --warning-800: #1f1f1f; --warning-900: #0a0a0a;
+  --error-50: #ede7d9; --error-100: #ede7d9; --error-200: #b8734a; --error-300: #b8734a; --error-400: #b8734a;
+  --error-500: #b8734a; --error-600: #b8734a; --error-700: #1f1f1f; --error-800: #1f1f1f; --error-900: #0a0a0a;
+  --info-50: #ede7d9; --info-100: #ede7d9; --info-200: #2e5748; --info-300: #2e5748; --info-400: #2e5748;
+  --info-500: #0b3d2e; --info-600: #0b3d2e; --info-700: #0b3d2e; --info-800: #1f1f1f; --info-900: #0a0a0a;
 
   --radius: 0.25rem;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -273,13 +273,75 @@
 
 /* Reveal motion */
 .reveal-line { display: block; overflow: hidden; padding-bottom: 0.04em; }
-.reveal-line > span { display: inline-block; transform: translateY(105%); transition: transform 1.1s var(--ease-out-expo); }
+.reveal-line > span { display: inline-block; transform: translateY(105%); transition: transform 680ms var(--ease-out-expo); }
 .is-in .reveal-line > span, .reveal-line.is-in > span { transform: translateY(0); }
 .theme-dark#top .reveal-line > span { transition-duration: 850ms; }
-.fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo); }
+.fade-up { opacity: 0; transform: translateY(16px); transition: opacity 620ms var(--ease-out-expo), transform 620ms var(--ease-out-expo); }
 .is-in .fade-up, .fade-up.is-in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal-line > span, .fade-up { transform: none !important; opacity: 1 !important; transition: none !important; }
+}
+
+/* Founder’s Affair editorial motion system */
+:root {
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 220ms;
+  --motion-base: 520ms;
+}
+html { scroll-padding-top: 5rem; }
+body { background: var(--grey-900); }
+.theme-dark, .theme-ivory, .theme-brand { position: relative; isolation: isolate; }
+.theme-dark::before, .theme-brand::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 88% 5%, color-mix(in srgb, var(--emerald-800) 42%, transparent), transparent 38%);
+}
+#top { background: var(--grey-900); }
+#top::after {
+  content: ""; position: absolute; inset: 7rem 2.5rem 2rem; z-index: -1; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--emerald-700) 55%, transparent);
+  clip-path: inset(0 0 0 0); opacity: .55;
+}
+.theme-ivory { background: var(--grey-100); }
+.theme-ivory::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(110deg, transparent 48%, color-mix(in srgb, var(--emerald-700) 8%, transparent) 100%); }
+.theme-brand { background: var(--emerald-800); }
+.theme-brand::before { background: radial-gradient(ellipse at 90% 10%, color-mix(in srgb, var(--sage-green, #2e5748) 75%, transparent), transparent 48%); }
+
+.label-mono { letter-spacing: .12em; }
+.font-display-x { letter-spacing: -.045em; }
+.reveal-line > span { will-change: transform; }
+.fade-up { will-change: opacity, transform; }
+.is-in .fade-up:nth-child(2) { transition-delay: 70ms !important; }
+.is-in .fade-up:nth-child(3) { transition-delay: 130ms !important; }
+
+#top .font-display-x { text-shadow: 0 0 70px color-mix(in srgb, var(--emerald-700) 20%, transparent); }
+#top .reveal-line em { font-family: Georgia, serif; font-weight: 400; }
+#about [id="team"] article { transition: transform var(--motion-base) var(--ease-smooth), border-color var(--motion-fast); }
+#about [id="team"] article:hover { transform: translateY(-6px); border-color: var(--copper-500); }
+#about [id="team"] article > div { transition: background-color var(--motion-base), color var(--motion-base), transform var(--motion-base) var(--ease-smooth); }
+#about [id="team"] article:hover > div { background: var(--copper-500); color: var(--grey-900); transform: rotate(-7deg); }
+#how ol > li { transition: border-color var(--motion-fast); }
+#how ol > li:has(button:hover), #how ol > li:has(button:focus-visible) { border-color: var(--copper-500); }
+#how ol button[aria-expanded="true"] > span:nth-child(2) { color: var(--copper-500); }
+#market [data-cursor="drag"] { overscroll-behavior-inline: contain; scroll-behavior: smooth; }
+#market article { transition: background-color var(--motion-base), padding var(--motion-base); }
+#market article:hover { background: color-mix(in srgb, var(--emerald-800) 8%, transparent); padding-inline: 1rem; }
+#experiences li { transition: border-color var(--motion-fast); }
+#experiences li:has(a:hover), #experiences li:has(a:focus-visible) { border-color: var(--copper-500); }
+#contact input { transition: border-color var(--motion-fast), box-shadow var(--motion-fast); }
+#contact input:focus { box-shadow: 0 1px 0 var(--copper-500); }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+button, a { transition-timing-function: var(--ease-smooth); }
+@media (hover: hover) and (pointer: fine) {
+  a[href]:not(.link-underline), button:not(:disabled) { transition-property: color, background-color, border-color, opacity, transform, box-shadow; transition-duration: 300ms; }
+  a[href]:not(.link-underline):hover { transform: translateY(-2px); }
+}
+@media (max-width: 767px) {
+  #top::after { inset: 6rem 1rem 1rem; }
+  #top .font-display-x { letter-spacing: -.055em; }
+  .reveal-line > span { transition-duration: 520ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
 .link-underline { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 0.5s var(--ease-out-expo); }
