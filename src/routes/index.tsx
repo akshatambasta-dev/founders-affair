@@ -4,20 +4,21 @@ import { Hero } from "@/components/site/Hero";
 import { Experiences } from "@/components/site/Experiences";
 import { Gallery } from "@/components/site/Gallery";
 import { About, Contact, Footer, Marquee, Services } from "@/components/site/Sections";
+import { Intro } from "@/components/site/Intro";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Founder's Affair — Two-Day Business Simulation" },
+      { title: "Founders’ Affair — Business Conclave" },
       {
         name: "description",
         content:
-          "A two-day entrepreneurial business simulation. Teams of five acquire a product, run a company, build a brand, pitch, and compete for simulated investor cheques.",
+          "Founders’ Affair is an entrepreneurial business simulation hosted by the Entrepreneurship & Innovation Cell.",
       },
-      { property: "og:title", content: "Founder's Affair — Two-Day Business Simulation" },
+      { property: "og:title", content: "Founders’ Affair — Business Conclave" },
       {
         property: "og:description",
-        content: "Teams of five become competing companies in a two-day business simulation.",
+        content: "Ideas. People. Opportunities. A business conclave hosted by EIC.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <>
+      <Intro />
       <Nav />
       <main>
         <Hero />
