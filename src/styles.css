@@ -584,3 +584,55 @@ footer a:hover { color:#b8734a; }
 @media (prefers-reduced-motion: reduce) {
   .fa-opening { display: none !important; }
 }
+
+
+/* Final palette pass from the supplied EIC brand board */
+:root {
+  --emerald-primary: #0b3d2e;
+  --deep-black: #0a0a0a;
+  --copper-accent: #b8734a;
+  --sage-green: #2e5748;
+  --ivory-text: #ede7d9;
+  --charcoal-detail: #1f1f1f;
+  --emerald-50: #e8f0ec;
+  --emerald-100: #c6d8d0;
+  --emerald-200: #9fbdaf;
+  --emerald-300: #729e8c;
+  --emerald-400: #477c67;
+  --emerald-500: #0b3d2e;
+  --emerald-600: #093328;
+  --emerald-700: #06271e;
+  --emerald-800: #0b3d2e;
+  --emerald-900: #0a0a0a;
+  --copper-50: #f5e8df;
+  --copper-100: #e9cbb8;
+  --copper-200: #d6a180;
+  --copper-300: #c88860;
+  --copper-400: #b8734a;
+  --copper-500: #b8734a;
+  --copper-600: #965a38;
+  --copper-700: #75432a;
+  --copper-800: #1f1f1f;
+  --copper-900: #0a0a0a;
+  --grey-50: #ede7d9;
+  --grey-100: #ede7d9;
+  --grey-200: #d7d0c3;
+  --grey-300: #b7b0a4;
+  --grey-400: #2e5748;
+  --grey-500: #2e5748;
+  --grey-600: #1f1f1f;
+  --grey-700: #1f1f1f;
+  --grey-800: #1f1f1f;
+  --grey-900: #0a0a0a;
+}
+.fa-opening__logo {
+  position: relative; z-index: 1;
+  display: block; width: clamp(10rem, 28vw, 21rem);
+  max-height: 8rem; object-fit: contain; background: #1f1f1f;
+  animation: fa-host-in .7s var(--ease-out-expo) both;
+}
+.fa-opening__host {
+  flex-direction: column; gap: .9rem; text-align: center;
+}
+.fa-opening__host > span:last-child { font-size: .48rem; letter-spacing: .16em; text-align: center; }
+.fa-opening__rule { margin: 1.35rem 0; }
