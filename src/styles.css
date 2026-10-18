@@ -824,16 +824,69 @@ footer a:hover { color:#b8734a; }
   letter-spacing: .22em;
   text-transform: uppercase;
 }
+.fa-journey-panel--opening {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: -4%;
+  right: -4%;
+  width: auto;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  animation: none;
+  transform: none;
+}
+.fa-opening-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+}
 .fa-opening-eic-logo {
   display: block;
-  width: clamp(13rem,32vw,29rem);
-  max-width: 76vw;
-  margin: 0 auto clamp(1rem,3vh,2.2rem);
-  filter: drop-shadow(0 0 32px rgba(237,231,217,.06));
+  width: clamp(13rem, 28vw, 25rem);
+  max-width: 80vw;
+  height: auto;
+  margin: 0;
+  filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.75));
 }
-.fa-journey-panel--opening .fa-journey-kicker { color: rgba(237,231,217,.7); margin-top: .5rem; }
-.fa-opening-line { display: block; width: 1px; height: clamp(2.3rem,7vh,5.3rem); margin: clamp(1.4rem,4vh,3rem) auto 1rem; background: linear-gradient(#b8734a,rgba(184,115,74,0)); }
-.fa-opening-prompt { color: rgba(237,231,217,.48); font-size: .48rem; letter-spacing: .16em; }
+.fa-opening-cue {
+  position: absolute;
+  bottom: clamp(1.6rem, 4vh, 3.2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: min(90vw, 36rem);
+  pointer-events: none;
+}
+.fa-opening-cue .fa-journey-kicker {
+  color: #b8734a;
+  margin: 0 0 clamp(0.4rem, 1.2vh, 0.8rem);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+}
+.fa-opening-line {
+  display: block;
+  width: 1px;
+  height: clamp(1.8rem, 5vh, 3.6rem);
+  margin: 0 auto clamp(0.5rem, 1.2vh, 0.9rem);
+  background: linear-gradient(#b8734a, rgba(184, 115, 74, 0));
+}
+.fa-opening-prompt {
+  margin: 0;
+  color: rgba(237, 231, 217, 0.72);
+  font-size: 0.48rem;
+  letter-spacing: 0.16em;
+}
 .fa-journey-panel--brand { transform: none; }
 .fa-main-title {
   display: flex;
@@ -1247,6 +1300,12 @@ header.theme-dark {
     padding-block: .3rem;
   }
   .fa-journey-panel { width: 100%; }
+  .fa-journey-panel--opening {
+    top: -7.4rem;
+    bottom: -6rem;
+    left: -0.9rem;
+    right: -0.9rem;
+  }
   .fa-opening-eic-logo { width: min(76vw,22rem); max-height: 28svh; }
   .fa-main-title { font-size: clamp(3.8rem,16.8vw,6.3rem); line-height: .8; }
   .fa-brand-subtitle { margin-top: 1.1rem; font-size: .8rem; line-height: 1.45; }

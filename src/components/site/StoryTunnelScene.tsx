@@ -585,20 +585,23 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             // Smoothly align and center the camera straight ahead for the finale calm chamber
             const finaleCenter = smooth(0.83, 0.96, p);
 
+            // Smoothly engage multi-directional camera flight as the opening gate opens (p = 0.01 -> 0.08)
+            const openingFlight = smooth(0.01, 0.08, p);
+
             // Horizontal sway: swoops left towards Boardroom, right towards Stock Market, centers at Ring Triad & Finale
-            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp * (1 - finaleCenter);
-            // Vertical pitch: elevates over the opening gate, dips towards the boardroom table, climbs into rotunda, levels at Finale
-            const camY = (Math.cos(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp * (1 - finaleCenter);
+            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp * (1 - finaleCenter) * openingFlight;
+            // Vertical pitch: dead center on opening iris at p=0, then elevates over gate and swoops across stations
+            const camY = (Math.sin(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp * (1 - finaleCenter) * openingFlight;
             camera!.position.set(camX, camY, camZ);
 
-            // Dynamic look-ahead with banking & yaw towards upcoming stations, centering at Finale
-            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp * (1 - finaleCenter);
-            const lookTargetY = Math.cos((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp * (1 - finaleCenter);
+            // Dynamic look-ahead with banking & yaw towards upcoming stations, centered at Opening & Finale
+            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp * (1 - finaleCenter) * openingFlight;
+            const lookTargetY = Math.sin((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp * (1 - finaleCenter) * openingFlight;
             camera!.lookAt(lookTargetX, lookTargetY, camZ - 22);
 
-            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly), leveling at Finale
+            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly), leveling at Opening & Finale
             if (!reduced) {
-              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp * (1 - finaleCenter);
+              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp * (1 - finaleCenter) * openingFlight;
               camera!.rotation.z = bankAngle;
             }
 

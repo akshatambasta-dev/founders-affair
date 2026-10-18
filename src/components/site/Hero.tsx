@@ -204,10 +204,14 @@ export function Hero() {
         <div className="fa-journey-content" aria-live="polite">
           {chapter === "opening" && (
             <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: 1 - smoothStep(0.18, 0.52, chapterProgress) }}>
-              <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
-              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.06, 0.16)}>Entrepreneurship & Innovation Cell presents</p>
-              <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.14, 0.22)} />
-              <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.18, 0.28)}>Scroll to enter the experience</p>
+              <div className="fa-opening-center">
+                <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
+              </div>
+              <div className="fa-opening-cue">
+                <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.06, 0.16)}>Entrepreneurship & Innovation Cell presents</p>
+                <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.14, 0.22)} />
+                <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.18, 0.28)}>Scroll to enter the experience</p>
+              </div>
             </div>
           )}
 
