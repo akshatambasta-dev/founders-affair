@@ -182,6 +182,19 @@ export function Hero() {
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
         <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.12 + smoothStep(0.08, 0.27, progress) * 0.38 - smoothStep(0.84, 0.97, progress) * 0.2 }} />
 
+        {chapter === "opening" && (
+          <div className="fa-opening-gate-overlay" style={{ opacity: 1 - smoothStep(0.18, 0.52, chapterProgress) }}>
+            <div className="fa-opening-center">
+              <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
+            </div>
+            <div className="fa-opening-cue">
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.06, 0.16)}>Entrepreneurship & Innovation Cell presents</p>
+              <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.14, 0.22)} />
+              <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.18, 0.28)}>Scroll to enter the experience</p>
+            </div>
+          </div>
+        )}
+
         <div className="fa-journey-top label-mono">
           <button type="button" className="fa-sound-toggle" onClick={toggleSound} aria-pressed={soundEnabled}>
             <svg className={"fa-sound-escapement" + (soundEnabled ? " is-on" : "")} viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
@@ -202,18 +215,6 @@ export function Hero() {
         </div>
 
         <div className="fa-journey-content" aria-live="polite">
-          {chapter === "opening" && (
-            <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: 1 - smoothStep(0.18, 0.52, chapterProgress) }}>
-              <div className="fa-opening-center">
-                <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
-              </div>
-              <div className="fa-opening-cue">
-                <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.06, 0.16)}>Entrepreneurship & Innovation Cell presents</p>
-                <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.14, 0.22)} />
-                <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.18, 0.28)}>Scroll to enter the experience</p>
-              </div>
-            </div>
-          )}
 
           {chapter === "brand" && (
             <div className="fa-journey-panel fa-journey-panel--brand" style={{ opacity: 1 - smoothStep(0.9, 0.995, chapterProgress) }}>

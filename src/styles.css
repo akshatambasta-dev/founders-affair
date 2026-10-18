@@ -654,7 +654,6 @@ footer a:hover { color:#b8734a; }
   left: 0;
   width: 100%;
   height: 100svh;
-  min-height: 540px;
   overflow: hidden;
   padding: 0;
   background: #080a09;
@@ -824,18 +823,13 @@ footer a:hover { color:#b8734a; }
   letter-spacing: .22em;
   text-transform: uppercase;
 }
-.fa-journey-panel--opening {
+.fa-opening-gate-overlay {
   position: absolute;
-  top: -10%;
-  bottom: -10%;
-  left: -4%;
-  right: -4%;
-  width: auto;
-  height: auto;
-  display: block;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  animation: none;
-  transform: none;
+  z-index: 4;
 }
 .fa-opening-center {
   position: absolute;
@@ -850,15 +844,15 @@ footer a:hover { color:#b8734a; }
 }
 .fa-opening-eic-logo {
   display: block;
-  width: clamp(13rem, 28vw, 25rem);
+  width: clamp(14rem, 28vw, 25rem);
   max-width: 80vw;
   height: auto;
   margin: 0;
-  filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.75));
+  filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.85));
 }
 .fa-opening-cue {
   position: absolute;
-  bottom: clamp(1.6rem, 4vh, 3.2rem);
+  bottom: clamp(1.8rem, 4.5vh, 3.8rem);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1140,7 +1134,6 @@ footer a:hover { color:#b8734a; }
 .fa-journey-panel--brand { animation: none; }
 @media (max-width: 767px) {
   .fa-journey-hero { height: 900svh; min-height: 900vh; overflow: clip; }
-  .fa-journey-sticky { min-height: 520px; }
   .fa-journey-top { top: 1rem; left: 1rem; right: 1rem; justify-content: flex-end; }
   .fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
   .fa-journey-wordmark { font-size: 1rem; }
@@ -1300,12 +1293,6 @@ header.theme-dark {
     padding-block: .3rem;
   }
   .fa-journey-panel { width: 100%; }
-  .fa-journey-panel--opening {
-    top: -7.4rem;
-    bottom: -6rem;
-    left: -0.9rem;
-    right: -0.9rem;
-  }
   .fa-opening-eic-logo { width: min(76vw,22rem); max-height: 28svh; }
   .fa-main-title { font-size: clamp(3.8rem,16.8vw,6.3rem); line-height: .8; }
   .fa-brand-subtitle { margin-top: 1.1rem; font-size: .8rem; line-height: 1.45; }
