@@ -26,6 +26,7 @@ This prototype implements the approved scene order in src/components/site/StoryT
 - Showroom — MIT: https://github.com/sutheimernico/showroom. Reviewed for scroll-driven 3D scene architecture and environmental storytelling. The Wet Circuit scene was reviewed as a code reference; it is not embedded as a separate website or canvas.
 - Quaternius Modular Sci-Fi Megakit — CC0: https://quaternius.com/packs/modularscifimegakit.html. Reviewed as a possible modular architecture source. This prototype uses custom, deliberately aligned corridor geometry rather than importing pieces that would need to be forced into the storyboard. Asset inserts can be evaluated after the scene composition is approved.
 - Poly Haven asset licence — CC0: https://polyhaven.com/license. Reviewed as a source for future PBR materials and HDRIs. The current scene uses generated weave, metal and floor maps so the preview does not depend on remote texture URLs.
-- Three.js is imported from esm.sh at runtime in this prototype. If the module fails to load or WebGL is unavailable, the CSS backdrop remains visible.
+- Three.js is bundled locally (`three@^0.185.0`) as a direct project dependency, enabling tree-shaking, predictable bundling and offline resilience. The WebGL fallback remains active if the context cannot initialize.
+- Scene 5 (Build / Move / Fund rings) features an architectural grounding cross-beam and vertical mounting pylons connecting to the floor rail.
 
 This is a review prototype. The main branch and existing live site have not been changed by this branch.

@@ -1,18 +1,18 @@
 import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 type SceneRefs = {
   progressRef: { current: number };
   reducedMotionRef: { current: boolean };
 };
 
-const THREE_URL = "https://esm.sh/three@0.185.0";
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const smooth = (a: number, b: number, n: number) => {
   const t = clamp((n - a) / Math.max(0.0001, b - a), 0, 1);
   return t * t * (3 - 2 * t);
 };
 
-function makePattern(THREE: any, kind: "weave" | "metal" | "floor") {
+function makePattern(kind: "weave" | "metal" | "floor") {
   const c = document.createElement("canvas");
   c.width = c.height = 512;
   const x = c.getContext("2d");
@@ -63,15 +63,15 @@ function makePattern(THREE: any, kind: "weave" | "metal" | "floor") {
   return tex;
 }
 
-function ring(THREE: any, radius: number, tube: number, material: any, z: number, segments = 88) {
+function ring(radius: number, tube: number, material: THREE.Material, z: number, segments = 88) {
   const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 12, segments), material);
   mesh.position.z = z;
   return mesh;
 }
 
-function curtain(THREE: any, scene: any, cfg: {
+function curtain(scene: THREE.Scene, cfg: {
   width: number; height: number; centerX: number; z: number; side: number;
-  role: "opening" | "finale"; material: any;
+  role: "opening" | "finale"; material: THREE.Material;
 }) {
   const geometry = new THREE.PlaneGeometry(cfg.width, cfg.height, 72, 56);
   const attr = geometry.attributes.position;
@@ -83,7 +83,7 @@ function curtain(THREE: any, scene: any, cfg: {
   return { mesh, base, side: cfg.side, width: cfg.width, role: cfg.role };
 }
 
-function animateCurtain(THREE: any, item: ReturnType<typeof curtain>, p: number, time: number, reduced: boolean) {
+function animateCurtain(item: ReturnType<typeof curtain>, p: number, time: number, reduced: boolean) {
   const attr = item.mesh.geometry.attributes.position;
   const arr = attr.array as Float32Array;
   const slide = item.role === "opening" ? smooth(.045, .22, p) * 16 : smooth(.81, .95, p) * 18;
@@ -113,47 +113,46 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     let cancelled = false;
     let frame = 0;
     let lastFrame = 0;
-    let renderer: any;
-    let scene: any;
-    let camera: any;
-    let gear: any;
-    let dayOne: any;
-    let dayTwo: any;
-    let ringTrio: any;
-    let endPortal: any;
-    let endGlow: any;
+    let renderer: THREE.WebGLRenderer | null = null;
+    let scene: THREE.Scene | null = null;
+    let camera: THREE.PerspectiveCamera | null = null;
+    let gear: THREE.Group | null = null;
+    let dayOne: THREE.Group | null = null;
+    let dayTwo: THREE.Group | null = null;
+    let ringTrio: THREE.Group | null = null;
+    let endPortal: THREE.Group | null = null;
+    let endGlow: THREE.Mesh | null = null;
+    let openingWarmLight: THREE.PointLight | null = null;
     const cloths: Array<ReturnType<typeof curtain>> = [];
-    const resources = new Set<any>();
+    const resources = new Set<{ dispose?: () => void }>();
     const keep = <T,>(item: T): T => {
-      if (item && (typeof item === "object" || typeof item === "function")) resources.add(item);
+      if (item && (typeof item === "object" || typeof item === "function")) resources.add(item as { dispose?: () => void });
       return item;
     };
 
-    const boot = async () => {
+    const boot = () => {
       try {
-        const THREE = await import(/* @vite-ignore */ THREE_URL) as any;
-        if (cancelled) return;
         const small = window.innerWidth < 768;
         renderer = new THREE.WebGLRenderer({
           canvas, alpha: true, antialias: !small, powerPreference: "high-performance",
           preserveDrawingBuffer: false,
         });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? .82 : 1.25));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.0 : 1.35));
         renderer.setSize(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight, false);
         renderer.setClearColor(0x000000, 0);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
+        renderer.toneMappingExposure = 1.1;
 
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(new THREE.Color("#080a08"), .004);
+        scene.fog = new THREE.FogExp2(new THREE.Color("#080a08"), .0032);
         camera = new THREE.PerspectiveCamera(76, innerWidth / Math.max(1, innerHeight), .1, 320);
         camera.position.set(0, 0, 38);
         camera.lookAt(0, 0, 18);
 
-        const weaveMap = keep(makePattern(THREE, "weave"));
-        const metalMap = keep(makePattern(THREE, "metal"));
-        const floorMap = keep(makePattern(THREE, "floor"));
+        const weaveMap = keep(makePattern("weave"));
+        const metalMap = keep(makePattern("metal"));
+        const floorMap = keep(makePattern("floor"));
         if (weaveMap) weaveMap.repeat.set(3, 2);
         if (metalMap) metalMap.repeat.set(2, 4);
         if (floorMap) floorMap.repeat.set(2, 8);
@@ -190,23 +189,47 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#d8c8a6" }));
         const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#10120f", side: THREE.DoubleSide }));
 
+        // --- LIGHTING ---
+        // Global ambient
         scene.add(new THREE.HemisphereLight(0xd5d8c8, 0x0a100c, 1.45));
+
+        // Key light — angled from above-left
         const key = new THREE.DirectionalLight(0xe1d4b8, 2.2);
         key.position.set(-8, 10, 12); scene.add(key);
+
+        // Edge fill — emerald tint from behind
         const edge = new THREE.DirectionalLight(0x3e8a65, 2.2);
         edge.position.set(8, -2, -20); scene.add(edge);
+
+        // ★ Warm ivory light illuminating the opening curtains
+        openingWarmLight = new THREE.PointLight("#ede0c4", 120, 42, 2);
+        openingWarmLight.position.set(0, 0, 22);
+        scene.add(openingWarmLight);
+
+        // Copper accent near the gear gate
         const addLight = (color: string, power: number, distance: number, pos: [number, number, number]) => {
           const light = new THREE.PointLight(color, power, distance, 2);
           light.position.set(...pos); scene.add(light);
         };
-        addLight("#b8734a", 86, 30, [0, 1.6, -7]);
-        addLight("#246b4c", 58, 38, [-5, 4, -36]);
-        addLight("#b8734a", 48, 30, [0, 0, -72]);
+        addLight("#b8734a", 96, 32, [0, 1.6, -5]);
+        // Emerald atmosphere in early tunnel
+        addLight("#246b4c", 68, 40, [-5, 4, -30]);
+        // Copper milestone at midpoint
+        addLight("#b8734a", 58, 32, [0, 0, -52]);
+        // Emerald glow in role section
+        addLight("#2e5748", 65, 36, [0, 2, -64]);
+        // Copper at Day 1/Day 2 transition
+        addLight("#b8734a", 58, 30, [0, 0, -72]);
+        // Emerald at Day 2
         addLight("#2e5748", 55, 34, [0, 2, -94]);
-        addLight("#b8734a", 72, 34, [-7, 0, -118]);
-        addLight("#e1cda8", 78, 44, [0, 2.5, -159]);
+        // Strong copper for the ring triptych
+        addLight("#b8734a", 82, 38, [-7, 0, -118]);
+        // Warm finale lighting
+        addLight("#e1cda8", 88, 48, [0, 2.5, -148]);
+        addLight("#b8734a", 54, 30, [0, 0, -159]);
 
-        // Continuous shell: ribs and rails share this same centreline and fill the camera frame.
+        // --- CONTINUOUS TUNNEL SHELL ---
+        // Ribs and rails share this same centreline and fill the camera frame.
         const shellGeometry = keep(new THREE.CylinderGeometry(12.7, 12.7, 138, 64, 1, true));
         shellGeometry.rotateX(Math.PI / 2);
         const shellMaterial = keep(new THREE.MeshStandardMaterial({
@@ -222,18 +245,28 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         floor.position.set(0, -12.52, -61); scene.add(floor);
 
         // One rib every 4.28 units; every fourth becomes a visible copper milestone collar.
+        // Thicker ribs for a solid machined look.
         for (let i = 0; i < 31; i++) {
           const z = -4 - i * 4.28;
           const milestone = i % 4 === 0;
-          const rib = ring(THREE, milestone ? 12.12 : 12.34, milestone ? .135 : .055, milestone ? copper : darkSteel, z);
+          const rib = ring(
+            milestone ? 12.12 : 12.34,
+            milestone ? .22 : .1,     // thicker ribs
+            milestone ? copper : darkSteel,
+            z,
+          );
           keep(rib.geometry); scene.add(rib);
           if (milestone) {
-            const inner = ring(THREE, 11.86, .025, copperGlow, z - .11);
+            const inner = ring(11.86, .04, copperGlow, z - .11);
             keep(inner.geometry); scene.add(inner);
+            // Add a subtle copper glow at each milestone
+            const milestoneGlow = new THREE.PointLight("#b8734a", 16, 12, 2);
+            milestoneGlow.position.set(0, 0, z);
+            scene.add(milestoneGlow);
           }
           // Twelve equally spaced brackets repeat on alternate ribs.
           if (i % 2 === 0) {
-            const geom = keep(new THREE.BoxGeometry(.26, .98, .4));
+            const geom = keep(new THREE.BoxGeometry(.32, 1.2, .5));
             const brackets = new THREE.InstancedMesh(geom, metal, 12);
             const temp = new THREE.Object3D();
             for (let j = 0; j < 12; j++) {
@@ -256,20 +289,21 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             points.push(new THREE.Vector3(Math.cos(a) * 11.9, Math.sin(a) * 11.9, z));
           }
           const curve = new THREE.CatmullRomCurve3(points);
-          const geom = keep(new THREE.TubeGeometry(curve, 110, j % 4 === 0 ? .072 : .034, 5, false));
+          const geom = keep(new THREE.TubeGeometry(curve, 110, j % 4 === 0 ? .09 : .045, 6, false));
           scene.add(new THREE.Mesh(geom, j % 4 === 0 ? copper : emerald));
         }
 
-        // Scene 2: one centered gear gate, with evenly indexed teeth and concentric machined rings.
+        // --- SCENE 2: GEAR GATE ---
+        // One centered gear gate, with evenly indexed teeth and concentric machined rings.
         gear = new THREE.Group(); gear.position.z = -6.6;
         const gateRings = [
-          ring(THREE, 10.1, .24, darkSteel, 0),
-          ring(THREE, 9.46, .095, copper, -.24),
-          ring(THREE, 7.2, .15, metal, -.48),
-          ring(THREE, 5.15, .1, emerald, -.66),
-          ring(THREE, 3.35, .055, copperGlow, -.98),
+          ring(10.1, .24, darkSteel, 0),
+          ring(9.46, .095, copper, -.24),
+          ring(7.2, .15, metal, -.48),
+          ring(5.15, .1, emerald, -.66),
+          ring(3.35, .055, copperGlow, -.98),
         ];
-        gateRings.forEach((item) => { keep(item.geometry); gear.add(item); });
+        gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
         const toothGeometry = keep(new THREE.BoxGeometry(.82, .32, .7));
         const teeth = new THREE.InstancedMesh(toothGeometry, copper, 48);
         const tooth = new THREE.Object3D();
@@ -287,70 +321,88 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         scene.add(gear);
 
-        // Scene 4: five gates at fixed depth intervals, mapped to the five C-suite roles.
+        // --- SCENE 4: FIVE ROLE GATES ---
+        // Five gates at fixed depth intervals, mapped to the five C-suite roles.
         const roleColors = [copperGlow, emerald, ivoryMetal, copper, emerald];
         for (let i = 0; i < 5; i++) {
           const z = -43 - i * 4.5;
-          const outer = ring(THREE, 4.4 + (i % 2) * .42, .12, roleColors[i], z, 72);
-          const inner = ring(THREE, 3.78 + (i % 2) * .42, .035, darkSteel, z - .14, 72);
+          const outer = ring(4.4 + (i % 2) * .42, .14, roleColors[i], z, 72);
+          const inner = ring(3.78 + (i % 2) * .42, .05, darkSteel, z - .14, 72);
           keep(outer.geometry); keep(inner.geometry); scene.add(outer, inner);
         }
 
-        // Scene 4b: Day 1 station with three decision rings on one shared plane.
+        // --- SCENE 4b: DAY 1 STATION ---
+        // Day 1 station with three decision rings on one shared plane.
         dayOne = new THREE.Group(); dayOne.position.z = -74;
         for (let i = -1; i <= 1; i++) {
-          const outer = ring(THREE, i === 0 ? 3.15 : 2.45, .11, i === 0 ? copperGlow : metal, 0, 72);
-          const inner = ring(THREE, i === 0 ? 2.85 : 2.17, .025, emerald, -.16, 64);
+          const outer = ring(i === 0 ? 3.15 : 2.45, .13, i === 0 ? copperGlow : metal, 0, 72);
+          const inner = ring(i === 0 ? 2.85 : 2.17, .035, emerald, -.16, 64);
           outer.position.x = inner.position.x = i * 5.4;
           keep(outer.geometry); keep(inner.geometry); dayOne.add(outer, inner);
         }
         scene.add(dayOne);
 
-        // Scene 4c: Day 2 converges into a larger marketplace portal.
+        // --- SCENE 4c: DAY 2 STATION ---
+        // Day 2 converges into a larger marketplace portal.
         dayTwo = new THREE.Group(); dayTwo.position.z = -94;
         const dayTwoParts = [
-          ring(THREE, 4.2, .16, copper, 0, 80),
-          ring(THREE, 3.7, .055, copperGlow, -.18, 80),
-          ring(THREE, 2.1, .09, emerald, -.1, 64),
-          ring(THREE, 2.1, .09, emerald, -.1, 64),
+          ring(4.2, .18, copper, 0, 80),
+          ring(3.7, .065, copperGlow, -.18, 80),
+          ring(2.1, .1, emerald, -.1, 64),
+          ring(2.1, .1, emerald, -.1, 64),
         ];
         dayTwoParts[2].position.x = -4.15; dayTwoParts[3].position.x = 4.15;
-        dayTwoParts.forEach((part) => { keep(part.geometry); dayTwo.add(part); });
+        dayTwoParts.forEach((part) => { keep(part.geometry); dayTwo!.add(part); });
         scene.add(dayTwo);
 
-        // Scene 5: the three rings for Build / Move / Fund form one intentional triptych.
+        // --- SCENE 5: THREE-RING TRIPTYCH (BUILD / MOVE / FUND) ---
+        // Three rings form one grounded, intentional architectural triptych.
         ringTrio = new THREE.Group(); ringTrio.position.z = -116;
         const triad = [
           { x: -7.35, r: 3.5, material: copperGlow },
           { x: 0, r: 4.05, material: emerald },
           { x: 7.35, r: 3.5, material: ivoryMetal },
         ];
+        // Horizontal grounding cross-beam linking all three rings
+        const triptychBeamGeom = keep(new THREE.BoxGeometry(20.5, .28, .36));
+        const triptychBeam = new THREE.Mesh(triptychBeamGeom, darkSteel);
+        triptychBeam.position.set(0, -4.6, -.1);
+        ringTrio.add(triptychBeam);
+
         triad.forEach((item, index) => {
-          const outer = ring(THREE, item.r, .16, item.material, 0, 80);
-          const inner = ring(THREE, item.r - .36, .04, darkSteel, -.18, 72);
+          const outer = ring(item.r, .18, item.material, 0, 80);
+          const inner = ring(item.r - .36, .05, darkSteel, -.18, 72);
           outer.position.x = inner.position.x = item.x;
           const bridge = new THREE.Mesh(keep(new THREE.BoxGeometry(.08, item.r * 1.7, .12)), index === 1 ? copperGlow : darkSteel);
           bridge.position.set(item.x, 0, -.08);
-          [outer, inner, bridge].forEach((part) => {
+
+          // Vertical mounting pylon anchoring each ring to the floor beam
+          const pylonGeom = keep(new THREE.BoxGeometry(.22, 2.2, .24));
+          const pylon = new THREE.Mesh(pylonGeom, copper);
+          pylon.position.set(item.x, -item.r - 0.4, -.08);
+
+          [outer, inner, bridge, pylon].forEach((part) => {
             if (part.geometry) keep(part.geometry);
-            ringTrio.add(part);
+            ringTrio!.add(part);
           });
         });
         scene.add(ringTrio);
 
-        // Scene 6: a quiet chamber and a single warm portal beyond the parted curtains.
+        // --- SCENE 6: CURTAIN CHAMBER & FINALE ---
+        // A quiet chamber and a single warm portal beyond the parted curtains.
         const endWall = new THREE.Mesh(keep(new THREE.PlaneGeometry(48, 38)), darkBackdrop);
         endWall.position.z = -164.5; scene.add(endWall);
         endPortal = new THREE.Group(); endPortal.position.z = -160.8;
         [
-          ring(THREE, 7.25, .18, copper, 0, 120),
-          ring(THREE, 6.75, .055, copperGlow, -.08, 120),
-          ring(THREE, 5.98, .035, warmPortal, -.14, 120),
-        ].forEach((part) => { keep(part.geometry); endPortal.add(part); });
+          ring(7.25, .18, copper, 0, 120),
+          ring(6.75, .065, copperGlow, -.08, 120),
+          ring(5.98, .04, warmPortal, -.14, 120),
+        ].forEach((part) => { keep(part.geometry); endPortal!.add(part); });
         scene.add(endPortal);
-        endGlow = new THREE.Mesh(keep(new THREE.CircleGeometry(5.82, 96)), keep(new THREE.MeshBasicMaterial({
+        const endGlowMat = keep(new THREE.MeshBasicMaterial({
           color: "#b69e79", transparent: true, opacity: .16, side: THREE.DoubleSide,
-        })));
+        }));
+        endGlow = new THREE.Mesh(keep(new THREE.CircleGeometry(5.82, 96)), endGlowMat);
         endGlow.position.z = -160.55; scene.add(endGlow);
         for (let i = 0; i < 7; i++) {
           const marker = new THREE.Mesh(
@@ -360,23 +412,27 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           marker.position.set(0, -12.35, -139 - i * 2.4); scene.add(marker);
         }
 
+        // --- CURTAINS ---
+        // Opening woven curtain pair
         const openingClothMaterial = keep(new THREE.MeshPhysicalMaterial({
           color: "#ede7d9", map: weaveMap, roughness: .88, metalness: .02, side: THREE.DoubleSide,
         }));
         cloths.push(
-          curtain(THREE, scene, { width: 27, height: 36, centerX: -13.5, z: 17, side: -1, role: "opening", material: openingClothMaterial }),
-          curtain(THREE, scene, { width: 27, height: 36, centerX: 13.5, z: 17, side: 1, role: "opening", material: openingClothMaterial }),
+          curtain(scene, { width: 27, height: 36, centerX: -13.5, z: 17, side: -1, role: "opening", material: openingClothMaterial }),
+          curtain(scene, { width: 27, height: 36, centerX: 13.5, z: 17, side: 1, role: "opening", material: openingClothMaterial }),
         );
+        // Finale curtain pair
         const finaleClothMaterial = keep(new THREE.MeshPhysicalMaterial({
           color: "#bfb39a", map: weaveMap, roughness: .88, metalness: .01,
           side: THREE.DoubleSide, transparent: true, opacity: .98,
         }));
         cloths.push(
-          curtain(THREE, scene, { width: 17.5, height: 35, centerX: -8.75, z: -142, side: -1, role: "finale", material: finaleClothMaterial }),
-          curtain(THREE, scene, { width: 17.5, height: 35, centerX: 8.75, z: -142, side: 1, role: "finale", material: finaleClothMaterial }),
+          curtain(scene, { width: 17.5, height: 35, centerX: -8.75, z: -142, side: -1, role: "finale", material: finaleClothMaterial }),
+          curtain(scene, { width: 17.5, height: 35, centerX: 8.75, z: -142, side: 1, role: "finale", material: finaleClothMaterial }),
         );
 
-        const boltGeometry = keep(new THREE.SphereGeometry(.07, 8, 6));
+        // --- BOLTS (instanced decoration) ---
+        const boltGeometry = keep(new THREE.SphereGeometry(.08, 8, 6));
         const bolts = new THREE.InstancedMesh(boltGeometry, copperGlow, 128);
         const bolt = new THREE.Object3D();
         let idx = 0;
@@ -390,17 +446,19 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         bolts.count = idx; bolts.instanceMatrix.needsUpdate = true; scene.add(bolts);
 
+        // --- RESIZE HANDLER ---
         const onResize = () => {
           if (!renderer || !camera || cancelled) return;
           const w = Math.max(1, canvas.clientWidth || innerWidth);
           const h = Math.max(1, canvas.clientHeight || innerHeight);
           camera.aspect = w / h; camera.updateProjectionMatrix();
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? .82 : 1.25));
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.0 : 1.35));
           renderer.setSize(w, h, false);
         };
         window.addEventListener("resize", onResize);
         (canvas as HTMLCanvasElement & { __cleanup?: () => void }).__cleanup = () => window.removeEventListener("resize", onResize);
 
+        // --- RENDER LOOP ---
         const render = (now: number) => {
           if (cancelled) return;
           const reduced = reducedMotionRef.current;
@@ -409,18 +467,26 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             lastFrame = now;
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
-            camera.position.set(Math.sin(p * Math.PI * 2.2) * .32, Math.sin(p * Math.PI * 2.8) * .22, 38 - p * 190);
-            camera.lookAt(Math.sin(p * Math.PI * 2.2) * .18, .08 * Math.sin(p * 5), camera.position.z - 20);
-            gear.rotation.z = reduced ? 0 : p * Math.PI * 4.2;
-            dayOne.rotation.z = reduced ? 0 : smooth(.52, .65, p) * .035;
-            dayTwo.rotation.z = reduced ? 0 : -smooth(.62, .76, p) * .045;
-            ringTrio.rotation.z = reduced ? 0 : smooth(.68, .84, p) * .035;
-            endPortal.rotation.z = reduced ? 0 : smooth(.82, 1, p) * .04;
-            endGlow.material.opacity = .08 + smooth(.85, .99, p) * .28;
-            for (const item of cloths) {
-              if ((item.role === "opening" && p < .28) || (item.role === "finale" && p > .76)) animateCurtain(THREE, item, p, t, reduced);
+
+            camera!.position.set(Math.sin(p * Math.PI * 2.2) * .32, Math.sin(p * Math.PI * 2.8) * .22, 38 - p * 190);
+            camera!.lookAt(Math.sin(p * Math.PI * 2.2) * .18, .08 * Math.sin(p * 5), camera!.position.z - 20);
+
+            gear!.rotation.z = reduced ? 0 : p * Math.PI * 4.2;
+            dayOne!.rotation.z = reduced ? 0 : smooth(.52, .65, p) * .035;
+            dayTwo!.rotation.z = reduced ? 0 : -smooth(.62, .76, p) * .045;
+            ringTrio!.rotation.z = reduced ? 0 : smooth(.68, .84, p) * .035;
+            endPortal!.rotation.z = reduced ? 0 : smooth(.82, 1, p) * .04;
+            (endGlow!.material as THREE.MeshBasicMaterial).opacity = .08 + smooth(.85, .99, p) * .28;
+
+            // Fade opening warm light as curtains part
+            if (openingWarmLight) {
+              openingWarmLight.intensity = 120 * (1 - smooth(.04, .2, p));
             }
-            renderer.render(scene, camera);
+
+            for (const item of cloths) {
+              if ((item.role === "opening" && p < .28) || (item.role === "finale" && p > .76)) animateCurtain(item, p, t, reduced);
+            }
+            renderer!.render(scene!, camera!);
           }
           frame = window.requestAnimationFrame(render);
         };
@@ -431,13 +497,14 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
       }
     };
 
-    void boot();
+    boot();
     return () => {
       cancelled = true;
       window.cancelAnimationFrame(frame);
       (canvas as HTMLCanvasElement & { __cleanup?: () => void }).__cleanup?.();
-      if (scene) scene.traverse((object: any) => {
-        if (object.geometry && !resources.has(object.geometry)) object.geometry.dispose?.();
+      if (scene) scene.traverse((object: THREE.Object3D) => {
+        const mesh = object as THREE.Mesh;
+        if (mesh.geometry && !resources.has(mesh.geometry)) mesh.geometry.dispose?.();
       });
       resources.forEach((resource) => resource?.dispose?.());
       renderer?.dispose?.();
