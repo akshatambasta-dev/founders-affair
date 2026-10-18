@@ -1125,3 +1125,26 @@ header.theme-dark {
   .fa-role-grid,.fa-day-grid,.fa-steps-grid { margin-top: .85rem; }
   .fa-journey-description { margin-top: .8rem; }
 }
+
+@media (max-height: 700px) and (max-width: 767px) {
+  .fa-journey-content { inset: 6.25rem .8rem 4.55rem; }
+  .fa-journey-kicker { margin-bottom: .55rem; }
+  .fa-statement { font-size: clamp(2.1rem,8.5vw,3.2rem); }
+  .fa-panel-heading { font-size: clamp(2.05rem,8.4vw,3.15rem); }
+  .fa-role-grid { margin-top: .75rem; gap: .2rem; }
+  .fa-role-grid b { width: clamp(2.25rem,10vw,3rem); }
+  .fa-role-grid span { font-size: .39rem; }
+  .fa-journey-panel--roles .fa-journey-description { margin-top: .7rem; font-size: .68rem; }
+  .fa-day-grid { margin-top: .7rem; }
+  .fa-day-grid article { padding: .55rem .5rem; }
+  .fa-day-grid h3 { font-size: .86rem; }
+  .fa-day-grid p { font-size: .63rem; }
+  .fa-day-activities { font-size: .48rem; }
+  .fa-capital-note { margin-top: .55rem; }
+  .fa-journey-panel--days .fa-journey-description { margin-top: .55rem; font-size: .65rem; }
+  .fa-steps-grid { margin-top: .7rem; gap: .45rem .65rem; }
+  .fa-steps-grid b { font-size: .78rem; }
+  .fa-steps-grid small { font-size: .54rem; }
+  .fa-journey-panel--steps .fa-journey-description { margin-top: .65rem; font-size: .64rem; }
+  .fa-finale-quote { font-size: clamp(1.65rem,7vw,2.5rem); }
+}
