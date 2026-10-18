@@ -291,8 +291,8 @@ export function Hero() {
               <h2 className="fa-finale-quote" style={revealStylePersistent(chapterProgress, 0.1, 0.23)}>“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
               <p className="fa-finale-manifesto" style={revealStylePersistent(chapterProgress, 0.28, 0.39)}>BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
               <div className="fa-contact-row" style={revealStylePersistent(chapterProgress, 0.4, 0.51)}>
-                <a href="mailto:foundersaffair@gmail.com">foundersaffair@gmail.com</a>
-                <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer">@eic.foundersaffair ↗</a>
+                <a href="mailto:foundersaffair@gmail.com" className="fa-contact-pill fa-contact-pill--primary">foundersaffair@gmail.com</a>
+                <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer" className="fa-contact-pill">@eic.foundersaffair ↗</a>
               </div>
               <span className="fa-registration-pending label-mono" style={revealStylePersistent(chapterProgress, 0.53, 0.63)}>Registration details to be announced</span>
             </div>
