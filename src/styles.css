@@ -1181,3 +1181,10 @@ header.theme-dark {
 .fa-journey-panel--steps,
 .fa-journey-panel--finale { text-shadow: 0 2px 20px rgba(0,0,0,.32); }
 @media (max-width: 767px) { .fa-story-canvas { image-rendering: auto; } }
+
+/* Keep fallback atmospheric only; the actual 3D rings define the perspective. */
+.fa-tunnel-fallback {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(11,61,46,.26) 0%, rgba(8,10,9,.22) 36%, #080a09 82%),
+    #080a09;
+}
