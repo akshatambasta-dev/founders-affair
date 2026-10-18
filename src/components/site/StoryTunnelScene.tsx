@@ -302,86 +302,117 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           scene.add(new THREE.Mesh(geom, j % 4 === 0 ? copper : emerald));
         }
 
-        // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 19) ---
-        openingIris = createMechanicalAperture(scene, 19, 9.8, copper, darkSteel, keep);
+        // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 28) ---
+        // Positioned close to camera start (z = 38) so overlapping blades fill the viewport at p = 0
+        openingIris = createMechanicalAperture(scene, 28, 8.2, copper, darkSteel, keep);
 
         // --- SCENE 2: GEAR GATE (Z = -6.6) ---
         gear = new THREE.Group(); gear.position.z = -6.6;
         const gateRings = [
-          ring(10.1, .24, darkSteel, 0),
-          ring(9.46, .095, copper, -.24),
-          ring(7.2, .15, metal, -.48),
-          ring(5.15, .1, emerald, -.66),
-          ring(3.35, .055, copperGlow, -.98),
+          ring(10.6, .32, darkSteel, 0),
+          ring(9.9, .15, copperGlow, -.18),
+          ring(7.6, .22, metal, -.38),
+          ring(5.4, .16, emerald, -.56),
+          ring(3.4, .09, copperGlow, -.82),
         ];
         gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
-        const toothGeometry = keep(new THREE.BoxGeometry(.82, .32, .7));
-        const teeth = new THREE.InstancedMesh(toothGeometry, copper, 48);
+        
+        // Prominent, heavy mechanical teeth with high-contrast copper material
+        const toothGeometry = keep(new THREE.BoxGeometry(1.2, .48, .85));
+        const teeth = new THREE.InstancedMesh(toothGeometry, copperGlow, 36);
         const tooth = new THREE.Object3D();
-        for (let i = 0; i < 48; i++) {
-          const a = i / 48 * Math.PI * 2;
-          tooth.position.set(Math.cos(a) * 10.22, Math.sin(a) * 10.22, 0);
-          tooth.rotation.set(0, 0, a); tooth.updateMatrix(); teeth.setMatrixAt(i, tooth.matrix);
+        for (let i = 0; i < 36; i++) {
+          const a = (i / 36) * Math.PI * 2;
+          tooth.position.set(Math.cos(a) * 10.7, Math.sin(a) * 10.7, 0);
+          tooth.rotation.set(0, 0, a);
+          tooth.updateMatrix();
+          teeth.setMatrixAt(i, tooth.matrix);
         }
         teeth.instanceMatrix.needsUpdate = true; gear.add(teeth);
-        const spokeGeometry = keep(new THREE.BoxGeometry(3.6, .095, .16));
-        for (let i = 0; i < 12; i++) {
-          const spoke = new THREE.Mesh(spokeGeometry, metal);
-          spoke.position.set(Math.cos(i / 12 * Math.PI * 2) * 3.7, Math.sin(i / 12 * Math.PI * 2) * 3.7, -.36);
-          spoke.rotation.z = i / 12 * Math.PI * 2; gear.add(spoke);
+
+        // Heavy counter-rotating inner planetary spoke hub
+        const spokeGeometry = keep(new THREE.BoxGeometry(4.2, .18, .28));
+        for (let i = 0; i < 8; i++) {
+          const spoke = new THREE.Mesh(spokeGeometry, copper);
+          const a = (i / 8) * Math.PI * 2;
+          spoke.position.set(Math.cos(a) * 4.1, Math.sin(a) * 4.1, -.28);
+          spoke.rotation.z = a;
+          gear.add(spoke);
         }
         scene.add(gear);
 
-        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -43 to -61) ---
-        // Instead of uniform rings, each role has a distinct architectural geometry:
-        // 0: CEO (Crown / Crest Diamond), 1: CFO (Hexagonal Valuation Vault), 2: CMO (Radial Broadcast Prism),
-        // 3: COO (Interlocking Meshed Gear Train), 4: CTO (Octagonal Tech Matrix)
-        const roleZ = [-43, -47.5, -52, -56.5, -61];
+        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
+        // Scaled up to 6.2 units and lit with dedicated overhead marker lights.
+        // 0: CEO (Crown / Crest Diamond), 1: CFO (Hexagonal Valuation Vault),
+        // 2: CMO (Radial Broadcast Prism), 3: COO (Interlocking Meshed Gear Train), 4: CTO (Octagonal Tech Matrix)
+        const roleZ = [-46, -51.5, -57, -62.5, -68];
+        const roleNames = ["CEO", "CFO", "CMO", "COO", "CTO"];
+        
         for (let r = 0; r < 5; r++) {
           const roleGroup = new THREE.Group();
           roleGroup.position.z = roleZ[r];
 
+          // Dedicated overhead spotlight for each C-suite gate
+          const roleSpot = new THREE.PointLight(r % 2 === 0 ? "#b8734a" : "#2e5748", 45, 18, 2);
+          roleSpot.position.set(0, 5.5, roleZ[r] + 1);
+          scene.add(roleSpot);
+
+          // Horizontal architectural floor support beam
+          const beamGeom = keep(new THREE.BoxGeometry(14, .32, .45));
+          const beam = new THREE.Mesh(beamGeom, darkSteel);
+          beam.position.set(0, -6.5, 0);
+          roleGroup.add(beam);
+
+          // Heavy vertical portal pillars
+          const pillarGeom = keep(new THREE.BoxGeometry(.45, 13, .55));
+          const leftPillar = new THREE.Mesh(pillarGeom, copper);
+          leftPillar.position.set(-6.8, 0, 0);
+          const rightPillar = new THREE.Mesh(pillarGeom, copper);
+          rightPillar.position.set(6.8, 0, 0);
+          roleGroup.add(leftPillar, rightPillar);
+
           if (r === 0) {
             // CEO: Royal Crest diamond gate
-            const diamondGeom = keep(new THREE.TorusGeometry(4.5, .15, 4, 4));
+            const diamondGeom = keep(new THREE.TorusGeometry(5.8, .28, 4, 4));
             diamondGeom.rotateZ(Math.PI / 4);
             const diamond = new THREE.Mesh(diamondGeom, copperGlow);
-            const innerRing = ring(3.6, .04, darkSteel, -.1, 64);
+            const innerRing = ring(4.5, .08, darkSteel, -.12, 64);
             roleGroup.add(diamond, innerRing);
           } else if (r === 1) {
             // CFO: Hexagonal Valuation Vault gate
-            const hexGeom = keep(new THREE.TorusGeometry(4.4, .16, 6, 6));
+            const hexGeom = keep(new THREE.TorusGeometry(5.6, .3, 6, 6));
             const hex = new THREE.Mesh(hexGeom, copper);
-            const innerTicker = ring(3.8, .04, emerald, -.1, 64);
+            const innerTicker = ring(4.5, .09, emerald, -.12, 64);
             roleGroup.add(hex, innerTicker);
           } else if (r === 2) {
             // CMO: Waveform Broadcast aperture
-            const waveRing = ring(4.5, .14, ivoryMetal, 0, 72);
-            for (let b = 0; b < 6; b++) {
-              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 1.8, .08)), copperGlow);
-              const angle = (b / 6) * Math.PI * 2;
-              fin.position.set(Math.cos(angle) * 4.4, Math.sin(angle) * 4.4, -.05);
+            const waveRing = ring(5.6, .26, ivoryMetal, 0, 72);
+            for (let b = 0; b < 8; b++) {
+              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.22, 2.6, .12)), copperGlow);
+              const angle = (b / 8) * Math.PI * 2;
+              fin.position.set(Math.cos(angle) * 5.4, Math.sin(angle) * 5.4, -.06);
               fin.rotation.z = angle;
               roleGroup.add(fin);
             }
             roleGroup.add(waveRing);
           } else if (r === 3) {
             // COO: Clockwork Meshed Gear Train gate
-            const gearRing = ring(4.3, .18, darkSteel, 0, 72);
-            for (let g = 0; g < 18; g++) {
-              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.35, .18, .22)), copper);
-              const angle = (g / 18) * Math.PI * 2;
-              cog.position.set(Math.cos(angle) * 4.35, Math.sin(angle) * 4.35, 0);
+            const gearRing = ring(5.5, .32, darkSteel, 0, 72);
+            for (let g = 0; g < 24; g++) {
+              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.5, .25, .35)), copperGlow);
+              const angle = (g / 24) * Math.PI * 2;
+              cog.position.set(Math.cos(angle) * 5.6, Math.sin(angle) * 5.6, 0);
               cog.rotation.z = angle;
               roleGroup.add(cog);
             }
             roleGroup.add(gearRing);
           } else {
             // CTO: Octagonal Tech Grid Matrix
-            const octGeom = keep(new THREE.TorusGeometry(4.4, .15, 8, 8));
+            const octGeom = keep(new THREE.TorusGeometry(5.6, .28, 8, 8));
             const oct = new THREE.Mesh(octGeom, emerald);
-            const coreSpoke = new THREE.Mesh(keep(new THREE.BoxGeometry(8.2, .08, .08)), copperGlow);
-            roleGroup.add(oct, coreSpoke);
+            const coreSpokeX = new THREE.Mesh(keep(new THREE.BoxGeometry(10.5, .14, .14)), copperGlow);
+            const coreSpokeY = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 10.5, .14)), copperGlow);
+            roleGroup.add(oct, coreSpokeX, coreSpokeY);
           }
 
           scene.add(roleGroup);
@@ -528,19 +559,20 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             camera!.position.set(Math.sin(p * Math.PI * 2.2) * .32, Math.sin(p * Math.PI * 2.8) * .22, 38 - p * 190);
             camera!.lookAt(Math.sin(p * Math.PI * 2.2) * .18, .08 * Math.sin(p * 5), camera!.position.z - 20);
 
-            gear!.rotation.z = reduced ? 0 : p * Math.PI * 4.2;
+            // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
+            gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
             dayOne!.rotation.z = reduced ? 0 : smooth(.52, .65, p) * .035;
             dayTwo!.rotation.z = reduced ? 0 : -smooth(.62, .76, p) * .045;
             ringTrio!.rotation.z = reduced ? 0 : smooth(.68, .84, p) * .035;
             endPortal!.rotation.z = reduced ? 0 : smooth(.82, 1, p) * .04;
             (endGlow!.material as THREE.MeshBasicMaterial).opacity = .08 + smooth(.85, .99, p) * .28;
 
-            // Animate Opening Iris: Starts closed, smoothly rotates blades outwards as progress moves 0.03 -> 0.22
+            // Animate Opening Iris: Starts closed, rotates blades outwards visibly across p = 0.01 -> 0.18
             if (openingIris) {
-              const irisOpen = smooth(.03, .22, p);
+              const irisOpen = smooth(.01, .18, p);
               openingIris.blades.forEach((blade, index) => {
                 const baseRot = (index / openingIris!.numBlades) * Math.PI * 2 + Math.PI / 2;
-                blade.rotation.z = baseRot + (irisOpen * 1.35);
+                blade.rotation.z = baseRot + (irisOpen * 1.85);
               });
             }
 

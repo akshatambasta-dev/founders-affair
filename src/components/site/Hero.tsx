@@ -160,7 +160,7 @@ export function Hero() {
       <div className="fa-scroll-sticky fa-journey-sticky">
         <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
-        <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.16 + smoothStep(0.08, 0.27, progress) * 0.74 - smoothStep(0.84, 0.97, progress) * 0.26 }} />
+        <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.12 + smoothStep(0.08, 0.27, progress) * 0.38 - smoothStep(0.84, 0.97, progress) * 0.2 }} />
         <div className="fa-journey-top label-mono">
           <a href="#top" className="fa-journey-wordmark" aria-label="Founders’ Affair — return to opening">FA<span> / </span>EIC</a>
           <span className="fa-journey-edition">A TWO-DAY BUSINESS SIMULATION</span>
