@@ -450,6 +450,7 @@ export function Hero() {
                   <span className="fa-day-activities">Brand War · Investor Marketplace</span>
                 </article>
               </div>
+              <p className="fa-capital-note label-mono">$100,000 in simulated starting capital. Spend it wisely.</p>
               <p className="fa-journey-description">The simulations are connected. A decision in one stage can change the next.</p>
             </div>
           )}
