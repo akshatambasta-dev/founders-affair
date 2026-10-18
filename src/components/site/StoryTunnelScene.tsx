@@ -212,6 +212,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     let scene: THREE.Scene | null = null;
     let camera: THREE.PerspectiveCamera | null = null;
     let gear: THREE.Group | null = null;
+    let planetCarrier: THREE.Group | null = null;
+    let outerRingGear: THREE.Group | null = null;
+    let sunCollar: THREE.Group | null = null;
+    const planetPinWheels: THREE.Group[] = [];
     let dayOne: THREE.Group | null = null;
     let dayTwo: THREE.Group | null = null;
     let ringTrio: THREE.Group | null = null;
@@ -397,39 +401,116 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           // Procedural bulkhead iris remains active
         }
 
-        // --- SCENE 2: GEAR GATE (Z = -6.6) ---
+        // --- SCENE 2: PLANETARY PIN WHEEL & EPICYCLIC GEARING MECHANISM (Z = -6.6) ---
         gear = new THREE.Group(); gear.position.z = -6.6;
-        const gateRings = [
-          ring(10.6, .32, darkSteel, 0),
-          ring(9.9, .15, copperGlow, -.18),
-          ring(7.6, .22, metal, -.38),
-          ring(5.4, .16, emerald, -.56),
-          ring(3.4, .09, copperGlow, -.82),
-        ];
-        gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
-        
-        // Prominent, heavy mechanical teeth with high-contrast copper material
-        const toothGeometry = keep(new THREE.BoxGeometry(1.2, .48, .85));
-        const teeth = new THREE.InstancedMesh(toothGeometry, copperGlow, 36);
-        const tooth = new THREE.Object3D();
-        for (let i = 0; i < 36; i++) {
-          const a = (i / 36) * Math.PI * 2;
-          tooth.position.set(Math.cos(a) * 10.7, Math.sin(a) * 10.7, 0);
-          tooth.rotation.set(0, 0, a);
-          tooth.updateMatrix();
-          teeth.setMatrixAt(i, tooth.matrix);
-        }
-        teeth.instanceMatrix.needsUpdate = true; gear.add(teeth);
 
-        // Heavy counter-rotating inner planetary spoke hub
-        const spokeGeometry = keep(new THREE.BoxGeometry(4.2, .18, .28));
-        for (let i = 0; i < 8; i++) {
-          const spoke = new THREE.Mesh(spokeGeometry, copper);
-          const a = (i / 8) * Math.PI * 2;
-          spoke.position.set(Math.cos(a) * 4.1, Math.sin(a) * 4.1, -.28);
-          spoke.rotation.z = a;
-          gear.add(spoke);
+        // 1. Outer Annular Ring Gear (with inward-facing drive teeth)
+        outerRingGear = new THREE.Group();
+        const ringOuterFrame = ring(10.6, .35, darkSteel, 0, 80);
+        const ringBezel = ring(11.1, .12, copperGlow, .06, 80);
+        const ringTrack = ring(9.9, .15, copper, -.12, 80);
+        keep(ringOuterFrame.geometry); keep(ringBezel.geometry); keep(ringTrack.geometry);
+        outerRingGear.add(ringOuterFrame, ringBezel, ringTrack);
+
+        // 48 Inward-facing drive teeth along the ring gear inner circumference
+        const ringToothGeom = keep(new THREE.BoxGeometry(0.38, 0.95, 0.65));
+        const ringTeeth = new THREE.InstancedMesh(ringToothGeom, copperGlow, 48);
+        const ringToothObj = new THREE.Object3D();
+        for (let i = 0; i < 48; i++) {
+          const a = (i / 48) * Math.PI * 2;
+          ringToothObj.position.set(Math.cos(a) * 10.15, Math.sin(a) * 10.15, 0);
+          ringToothObj.rotation.set(0, 0, a);
+          ringToothObj.updateMatrix();
+          ringTeeth.setMatrixAt(i, ringToothObj.matrix);
         }
+        ringTeeth.instanceMatrix.needsUpdate = true;
+        outerRingGear.add(ringTeeth);
+        gear.add(outerRingGear);
+
+        // 2. Central Sun Portal Collar (open for camera pass-through)
+        sunCollar = new THREE.Group();
+        const sunRing1 = ring(4.35, .18, copper, 0, 64);
+        const sunRing2 = ring(3.85, .09, copperGlow, -.14, 64);
+        const sunRing3 = ring(3.4, .08, darkSteel, -.22, 64);
+        keep(sunRing1.geometry); keep(sunRing2.geometry); keep(sunRing3.geometry);
+        sunCollar.add(sunRing1, sunRing2, sunRing3);
+
+        // 24 Outward-facing sun gear teeth
+        const sunToothGeom = keep(new THREE.BoxGeometry(0.32, 0.68, 0.45));
+        const sunTeeth = new THREE.InstancedMesh(sunToothGeom, copper, 24);
+        const sunToothObj = new THREE.Object3D();
+        for (let i = 0; i < 24; i++) {
+          const a = (i / 24) * Math.PI * 2;
+          sunToothObj.position.set(Math.cos(a) * 4.45, Math.sin(a) * 4.45, 0);
+          sunToothObj.rotation.set(0, 0, a);
+          sunToothObj.updateMatrix();
+          sunTeeth.setMatrixAt(i, sunToothObj.matrix);
+        }
+        sunTeeth.instanceMatrix.needsUpdate = true;
+        sunCollar.add(sunTeeth);
+        gear.add(sunCollar);
+
+        // 3. Planet Carrier Spider (holds the 6 planet gears at orbit radius 7.2)
+        planetCarrier = new THREE.Group();
+        const carrierRing = ring(7.2, .14, emerald, 0, 64);
+        keep(carrierRing.geometry);
+        planetCarrier.add(carrierRing);
+
+        const carrierArmGeom = keep(new THREE.BoxGeometry(0.42, 3.2, 0.22));
+        const planetAxleGeom = keep(new THREE.CylinderGeometry(0.35, 0.35, 0.35, 16));
+        const planetDiscGeom = keep(new THREE.CylinderGeometry(1.85, 1.85, 0.16, 28));
+        const pinGeom = keep(new THREE.CylinderGeometry(0.09, 0.09, 0.38, 8));
+        const hexCapGeom = keep(new THREE.CylinderGeometry(0.32, 0.32, 0.32, 6));
+
+        // 4. Six Satellite Planetary Pin Wheels
+        const numPlanets = 6;
+        planetPinWheels.length = 0;
+        for (let pIdx = 0; pIdx < numPlanets; pIdx++) {
+          const orbAngle = (pIdx / numPlanets) * Math.PI * 2;
+          const orbX = Math.cos(orbAngle) * 7.2;
+          const orbY = Math.sin(orbAngle) * 7.2;
+
+          // Carrier radial arm connecting hub to planet axle
+          const arm = new THREE.Mesh(carrierArmGeom, pIdx % 2 === 0 ? copper : emerald);
+          arm.position.set(Math.cos(orbAngle) * 5.7, Math.sin(orbAngle) * 5.7, -0.08);
+          arm.rotation.z = orbAngle + Math.PI / 2;
+          planetCarrier.add(arm);
+
+          // Planet wheel assembly
+          const planetGroup = new THREE.Group();
+          planetGroup.position.set(orbX, orbY, 0);
+
+          // Central axle boss
+          const axle = new THREE.Mesh(planetAxleGeom, darkSteel);
+          axle.rotation.x = Math.PI / 2;
+          planetGroup.add(axle);
+
+          // Main gear wheel disc
+          const disc = new THREE.Mesh(planetDiscGeom, pIdx % 2 === 0 ? copper : darkSteel);
+          disc.rotation.x = Math.PI / 2;
+          planetGroup.add(disc);
+
+          // 12 Peripheral Drive Pins (Pin Wheel Architecture)
+          const numPins = 12;
+          for (let pinI = 0; pinI < numPins; pinI++) {
+            const pinA = (pinI / numPins) * Math.PI * 2;
+            const pinMesh = new THREE.Mesh(pinGeom, copperGlow);
+            pinMesh.position.set(Math.cos(pinA) * 1.62, Math.sin(pinA) * 1.62, 0);
+            pinMesh.rotation.x = Math.PI / 2;
+            planetGroup.add(pinMesh);
+          }
+
+          // Polished Hex Hub Nut
+          const hexCap = new THREE.Mesh(hexCapGeom, copperGlow);
+          hexCap.position.z = 0.12;
+          hexCap.rotation.x = Math.PI / 2;
+          planetGroup.add(hexCap);
+
+          planetCarrier.add(planetGroup);
+          planetPinWheels.push(planetGroup);
+        }
+
+        gear.add(planetCarrier);
         scene.add(gear);
 
         // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
@@ -680,8 +761,17 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
               camera!.rotation.z = bankAngle;
             }
 
-            // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
-            gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
+            // Planetary Pin Wheel & Epicyclic Gearing Rotation
+            const carrierAngle = reduced ? 0 : (t * 0.45) + (p * Math.PI * 8.0);
+            if (planetCarrier) planetCarrier.rotation.z = carrierAngle;
+            if (outerRingGear) outerRingGear.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
+            if (sunCollar) sunCollar.rotation.z = reduced ? 0 : -(t * 0.3) - (p * Math.PI * 5.0);
+
+            // Counter-rotate each planet pinwheel on its own axle in true mechanical epicyclic ratio
+            const planetSpin = reduced ? 0 : -carrierAngle * 2.8;
+            planetPinWheels.forEach((pw) => {
+              pw.rotation.z = planetSpin;
+            });
             dayOne!.rotation.z = reduced ? 0 : smooth(.52, .65, p) * .035;
             dayTwo!.rotation.z = reduced ? 0 : -smooth(.62, .76, p) * .045;
             ringTrio!.rotation.z = reduced ? 0 : smooth(.68, .84, p) * .035;
