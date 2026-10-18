@@ -536,3 +536,51 @@ footer a:hover { color:#b8734a; }
   .fa-scene__grain,.fa-scene__ring--mid,.fa-scroll-cue span { animation: none; }
   .fa-scroll-copy { animation: none; }
 }
+
+
+/* Host-first 2.6s opening */
+.fa-opening {
+  position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; overflow: hidden;
+  background: #080908; color: #ede7d9;
+  animation: fa-opening-out .7s cubic-bezier(.7,0,.2,1) 1.9s both;
+}
+.fa-opening::before {
+  position: absolute; inset: 0; content: ""; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 44%, rgba(46,87,72,.22), transparent 50%);
+}
+.fa-opening__host {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 1rem;
+  color: rgba(237,231,217,.72); font-family: var(--font-mono); font-size: .55rem;
+  letter-spacing: .12em; line-height: 1.6; text-transform: uppercase;
+  animation: fa-host-in .7s var(--ease-out-expo) both;
+}
+.fa-opening__emblem {
+  display: grid; width: 3.3rem; aspect-ratio: 1; place-items: center;
+  border: 1px solid #b8734a; color: #ede7d9; font-family: var(--font-display);
+  font-size: .9rem; font-weight: 800; letter-spacing: .08em;
+}
+.fa-opening__rule {
+  position: relative; z-index: 1; display: block; width: min(20rem, 48vw); height: 1px;
+  margin: 2rem 0; background: #b8734a; transform-origin: center;
+  animation: fa-rule-in .75s var(--ease-out-expo) .25s both;
+}
+.fa-opening__title {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;
+  font-family: Georgia, "Times New Roman", serif; font-size: clamp(3.8rem, 12vw, 9rem);
+  line-height: .78; letter-spacing: -.085em;
+  animation: fa-title-in .85s var(--ease-out-expo) .55s both;
+}
+.fa-opening__title em { margin-top: .12em; color: #d1b79a; font-weight: 400; }
+.fa-opening__subtitle {
+  position: relative; z-index: 1; margin: 1.4rem 0 0; color: #b8734a;
+  font-family: var(--font-mono); font-size: .57rem; letter-spacing: .22em;
+  animation: fa-title-in .65s var(--ease-out-expo) .8s both;
+}
+@keyframes fa-host-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fa-rule-in { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+@keyframes fa-title-in { from { opacity: 0; transform: translateY(22px); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes fa-opening-out { to { opacity: 0; visibility: hidden; clip-path: inset(0 0 100% 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .fa-opening { display: none !important; }
+}
