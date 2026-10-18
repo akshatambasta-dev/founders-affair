@@ -26,7 +26,7 @@ export function Intro() {
   return (
     <div className="fa-opening" role="presentation">
       <div className="fa-opening__host">
-        <span className="fa-opening__emblem">EIC</span>
+        <img className="fa-opening__logo" src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" />
         <span>Entrepreneurship<br />& Innovation Cell</span>
       </div>
       <span className="fa-opening__rule" />
