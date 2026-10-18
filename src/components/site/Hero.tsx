@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { TunnelModels } from "@/components/site/TunnelModels";
 
 type Chapter = "opening" | "brand" | "manifesto" | "roles" | "days" | "steps" | "finale";
 
@@ -422,6 +423,7 @@ export function Hero() {
           <div className="fa-fallback-ring fa-fallback-ring--three" />
           <div className="fa-fallback-core" />
         </div>
+        <TunnelModels progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
         <div className="fa-journey-shade" aria-hidden="true" />
         <div className="fa-journey-top label-mono">
           <a href="#top" className="fa-journey-wordmark" aria-label="Founders’ Affair — return to opening">FA<span> / </span>EIC</a>
