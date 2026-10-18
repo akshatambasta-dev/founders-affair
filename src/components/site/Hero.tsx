@@ -158,12 +158,7 @@ export function Hero() {
   return (
     <section id="top" ref={sectionRef} className="fa-scroll-hero fa-journey-hero theme-dark" style={sceneStyle}>
       <div className="fa-scroll-sticky fa-journey-sticky">
-        <div className="fa-tunnel-fallback" aria-hidden="true">
-          <div className="fa-fallback-ring fa-fallback-ring--one" />
-          <div className="fa-fallback-ring fa-fallback-ring--two" />
-          <div className="fa-fallback-ring fa-fallback-ring--three" />
-          <div className="fa-fallback-core" />
-        </div>
+        <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
         <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.16 + smoothStep(0.08, 0.27, progress) * 0.74 - smoothStep(0.84, 0.97, progress) * 0.26 }} />
         <div className="fa-journey-top label-mono">
