@@ -34,25 +34,25 @@ const fragmentShader = [
   "}",
   "vec2 tunnelField(vec3 p) {",
   "  float r = length(p.xy);",
-  "  float wallRadius = 3.18 + 0.07 * sin(p.z * 0.22) + 0.045 * sin(p.z * 0.63);",
+  "  float wallRadius = 2.68 + 0.08 * sin(p.z * 0.22) + 0.05 * sin(p.z * 0.63);",
   "  float best = abs(r - wallRadius) - 0.055;",
   "  float material = 0.0;",
   "  float zRail = mod(p.z - 1.125, 3.15) - 1.575;",
-  "  float rail = length(vec2(r - 2.92, zRail)) - 0.075;",
+  "  float rail = length(vec2(r - 2.43, zRail)) - 0.075;",
   "  if (rail < best) { best = rail; material = 1.0; }",
   "  float zGear = mod(p.z - 0.15, 4.1) - 2.05;",
   "  float angle = atan(p.y, p.x);",
   "  float toothAngle = mod(angle + 0.1308997, 0.2617994) - 0.1308997;",
-  "  float teeth = boxD(vec3(r - 2.63, toothAngle * 2.63, zGear), vec3(0.145, 0.052, 0.18));",
+  "  float teeth = boxD(vec3(r - 2.18, toothAngle * 2.18, zGear), vec3(0.155, 0.058, 0.19));",
   "  if (teeth < best) { best = teeth; material = 2.0; }",
-  "  float gearRing = length(vec2(r - 2.63, zGear)) - 0.075;",
+  "  float gearRing = length(vec2(r - 2.18, zGear)) - 0.075;",
   "  if (gearRing < best) { best = gearRing; material = 1.0; }",
   "  float zInner = mod(p.z - 0.675, 2.25) - 1.125;",
-  "  float innerRail = length(vec2(r - 2.22, zInner)) - 0.027;",
+  "  float innerRail = length(vec2(r - 1.91, zInner)) - 0.035;",
   "  if (innerRail < best) { best = innerRail; material = 3.0; }",
   "  float zPlate = mod(p.z + 0.15, 1.18) - 0.59;",
   "  float plateAngle = mod(angle + 0.2617994, 0.5235988) - 0.2617994;",
-  "  float plate = boxD(vec3(r - 2.78, plateAngle * 2.78, zPlate), vec3(0.17, 0.115, 0.24));",
+  "  float plate = boxD(vec3(r - 2.48, plateAngle * 2.48, zPlate), vec3(0.17, 0.115, 0.24));",
   "  if (plate < best) { best = plate; material = 0.0; }",
   "  return vec2(best, material);",
   "}",
@@ -85,7 +85,7 @@ const fragmentShader = [
   "  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / max(u_resolution.y, 1.0);",
   "  float aspect = u_resolution.x / max(u_resolution.y, 1.0);",
   "  vec3 ro = vec3(0.0, 0.0, 0.0);",
-  "  vec3 rd = normalize(vec3(uv.x * 1.55, uv.y * 1.12, 1.0));",
+  "  vec3 rd = normalize(vec3(uv.x * 2.25, uv.y * 1.82, 0.9));",
   "  float t = 0.0;",
   "  float material = -1.0;",
   "  for (int i = 0; i < 64; i++) {",
@@ -95,7 +95,17 @@ const fragmentShader = [
   "    t += clamp(hit.x * 0.72, 0.012, 0.68);",
   "    if (t > 34.0) break;",
   "  }",
-  "  vec3 color = vec3(0.006, 0.008, 0.007);",
+  "  float sceneRadius = length(uv);",
+  "  float sceneAngle = atan(uv.y, uv.x);",
+  "  float beamWave = 0.5 + 0.5 * cos(sceneAngle * 46.0 + sin(sceneRadius * 9.0) * 0.7);",
+  "  float radialBeams = pow(beamWave, 22.0) * smoothstep(0.04, 1.15, sceneRadius);",
+  "  float nebula = 0.5 + 0.5 * sin(uv.x * 7.0 + sin(uv.y * 5.0)) * cos(uv.y * 8.0 - uv.x * 3.0);",
+  "  float starCell = hash(vec3(floor(gl_FragCoord.xy / 3.0), 17.0));",
+  "  float stars = step(0.9975, starCell) * (0.35 + 0.65 * hash(vec3(floor(gl_FragCoord.xy / 3.0), 41.0)));",
+  "  vec3 color = vec3(0.003, 0.005, 0.01);",
+  "  color += vec3(0.009, 0.025, 0.02) * nebula * (0.3 + 0.7 * smoothstep(0.0, 0.8, sceneRadius));",
+  "  color += vec3(0.016, 0.045, 0.034) * radialBeams * 0.42;",
+  "  color += vec3(0.52, 0.42, 0.30) * stars * 0.48;",
   "  if (material >= 0.0) {",
   "    vec3 pos = tunnelPoint(ro + rd * t);",
   "    vec3 n = normalAt(ro + rd * t);",
@@ -146,14 +156,49 @@ function smoothStep(edge0: number, edge1: number, value: number) {
   return t * t * (3 - 2 * t);
 }
 
+const chapterRanges: Record<Chapter, [number, number]> = {
+  opening: [0, 0.095],
+  brand: [0.095, 0.27],
+  manifesto: [0.27, 0.405],
+  roles: [0.405, 0.535],
+  days: [0.535, 0.665],
+  steps: [0.665, 0.835],
+  finale: [0.835, 1],
+};
+
 function getChapter(progress: number): Chapter {
-  if (progress < 0.12) return "opening";
-  if (progress < 0.425) return "brand";
-  if (progress < 0.55) return "manifesto";
-  if (progress < 0.665) return "roles";
-  if (progress < 0.765) return "days";
-  if (progress < 0.89) return "steps";
+  if (progress < chapterRanges.brand[0]) return "opening";
+  if (progress < chapterRanges.manifesto[0]) return "brand";
+  if (progress < chapterRanges.roles[0]) return "manifesto";
+  if (progress < chapterRanges.days[0]) return "roles";
+  if (progress < chapterRanges.steps[0]) return "days";
+  if (progress < chapterRanges.finale[0]) return "steps";
   return "finale";
+}
+
+function getChapterProgress(progress: number, chapter: Chapter) {
+  const [start, end] = chapterRanges[chapter];
+  return clamp01((progress - start) / (end - start));
+}
+
+function revealStyle(
+  progress: number,
+  start: number,
+  end: number,
+  exitStart = 0.88,
+  exitEnd = 0.99,
+): CSSProperties {
+  const entering = smoothStep(start, end, progress);
+  const exiting = smoothStep(exitStart, exitEnd, progress);
+  const opacity = entering * (1 - exiting);
+  const translateY = (1 - entering) * 18 - exiting * 10;
+  const blur = (1 - entering) * 5 + exiting * 3;
+  return {
+    opacity,
+    transform: `translate3d(0, ${translateY.toFixed(1)}px, 0)`,
+    filter: `blur(${blur.toFixed(1)}px)`,
+    willChange: "opacity, transform, filter",
+  };
 }
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
@@ -186,8 +231,7 @@ export function Hero() {
 
   reducedMotionRef.current = reducedMotion;
   const chapter = getChapter(progress);
-  const openingOpacity = 1 - smoothStep(0.055, 0.125, progress);
-  const brandOpacity = smoothStep(0.16, 0.245, progress) * (1 - smoothStep(0.37, 0.435, progress));
+  const chapterProgress = getChapterProgress(progress, chapter);
   const sceneStyle = { "--journey-progress": progress } as CSSProperties;
 
   useEffect(() => {
@@ -390,53 +434,53 @@ export function Hero() {
 
         <div className="fa-journey-content" aria-live="polite">
           {chapter === "opening" && (
-            <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: openingOpacity }}>
+            <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: 1 - smoothStep(0.78, 0.99, chapterProgress) }}>
               <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
-              <p className="fa-journey-kicker label-mono">Entrepreneurship & Innovation Cell presents</p>
-              <span className="fa-opening-line" />
-              <p className="fa-opening-prompt label-mono">Scroll to enter the experience</p>
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.12, 0.22)}>Entrepreneurship & Innovation Cell presents</p>
+              <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.23, 0.32)} />
+              <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.3, 0.4)}>Scroll to enter the experience</p>
             </div>
           )}
 
           {chapter === "brand" && (
-            <div className="fa-journey-panel fa-journey-panel--brand" style={{ opacity: brandOpacity }}>
-              <p className="fa-journey-kicker label-mono">EIC Presents</p>
-              <h1 className="fa-main-title"><span>Founders’</span><em>Affair</em></h1>
-              <p className="fa-brand-subtitle">Ideas. People. Opportunities.</p>
-              <span className="fa-brand-rule" />
-              <p className="fa-brand-caption label-mono">Build it. Run it. Move it. Sell it. Fund it.</p>
+            <div className="fa-journey-panel fa-journey-panel--brand" style={{ opacity: 1 - smoothStep(0.9, 0.995, chapterProgress) }}>
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>EIC Presents</p>
+              <h1 className="fa-main-title" style={revealStyle(chapterProgress, 0.08, 0.22)}><span>Founders’</span><em>Affair</em></h1>
+              <p className="fa-brand-subtitle" style={revealStyle(chapterProgress, 0.25, 0.36)}>Ideas. People. Opportunities.</p>
+              <span className="fa-brand-rule" style={revealStyle(chapterProgress, 0.36, 0.43)} />
+              <p className="fa-brand-caption label-mono" style={revealStyle(chapterProgress, 0.43, 0.54)}>Build it. Run it. Move it. Sell it. Fund it.</p>
             </div>
           )}
 
           {chapter === "manifesto" && (
             <div className="fa-journey-panel fa-journey-panel--manifesto">
-              <p className="fa-journey-kicker label-mono">The simulation</p>
-              <h2 className="fa-statement">Build the company.<br />Move the market.<br /><em>Win the investors.</em></h2>
-              <p className="fa-journey-description">Five people. Five C-suite roles. One company to build, run and sell in two days.</p>
-              <p className="fa-journey-side-note label-mono">Every decision has consequences.</p>
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>The simulation</p>
+              <h2 className="fa-statement" style={revealStyle(chapterProgress, 0.1, 0.24)}>Build the company.<br />Move the market.<br /><em>Win the investors.</em></h2>
+              <p className="fa-journey-description" style={revealStyle(chapterProgress, 0.28, 0.39)}>Five people. Five C-suite roles. One company to build, run and sell in two days.</p>
+              <p className="fa-journey-side-note label-mono" style={revealStyle(chapterProgress, 0.42, 0.52)}>Every decision has consequences.</p>
             </div>
           )}
 
           {chapter === "roles" && (
             <div className="fa-journey-panel fa-journey-panel--roles">
-              <p className="fa-journey-kicker label-mono">Five roles. One company.</p>
-              <h2 className="fa-panel-heading">Take the seat.<br /><em>Make the call.</em></h2>
-              <div className="fa-role-grid">
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>Five roles. One company.</p>
+              <h2 className="fa-panel-heading" style={revealStyle(chapterProgress, 0.1, 0.22)}>Take the seat.<br /><em>Make the call.</em></h2>
+              <div className="fa-role-grid" style={revealStyle(chapterProgress, 0.25, 0.4)}>
                 <div><b>CEO</b><span>Strategy</span></div>
                 <div><b>CFO</b><span>Finance</span></div>
                 <div><b>CMO</b><span>Brand</span></div>
                 <div><b>COO</b><span>Operations</span></div>
                 <div><b>CTO</b><span>Innovation</span></div>
               </div>
-              <p className="fa-journey-description">Five executive roles. One team. A company that has to survive every decision.</p>
+              <p className="fa-journey-description" style={revealStyle(chapterProgress, 0.43, 0.54)}>Five executive roles. One team. A company that has to survive every decision.</p>
             </div>
           )}
 
           {chapter === "days" && (
             <div className="fa-journey-panel fa-journey-panel--days">
-              <p className="fa-journey-kicker label-mono">One company. Two days.</p>
-              <h2 className="fa-panel-heading">Build it.<br /><em>Then get funded.</em></h2>
-              <div className="fa-day-grid">
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>One company. Two days.</p>
+              <h2 className="fa-panel-heading" style={revealStyle(chapterProgress, 0.1, 0.22)}>Build it.<br /><em>Then get funded.</em></h2>
+              <div className="fa-day-grid" style={revealStyle(chapterProgress, 0.25, 0.4)}>
                 <article>
                   <span className="fa-day-label label-mono">DAY 01</span>
                   <h3>Build and move the market</h3>
@@ -450,16 +494,16 @@ export function Hero() {
                   <span className="fa-day-activities">Brand War · Investor Marketplace</span>
                 </article>
               </div>
-              <p className="fa-capital-note label-mono">$100,000 in simulated starting capital. Spend it wisely.</p>
-              <p className="fa-journey-description">The simulations are connected. A decision in one stage can change the next.</p>
+              <p className="fa-capital-note label-mono" style={revealStyle(chapterProgress, 0.42, 0.51)}>$100,000 in simulated starting capital. Spend it wisely.</p>
+              <p className="fa-journey-description" style={revealStyle(chapterProgress, 0.51, 0.61)}>The simulations are connected. A decision in one stage can change the next.</p>
             </div>
           )}
 
           {chapter === "steps" && (
             <div className="fa-journey-panel fa-journey-panel--steps">
-              <p className="fa-journey-kicker label-mono">The road to the win</p>
-              <h2 className="fa-panel-heading">Eight steps.<br /><em>One winner.</em></h2>
-              <div className="fa-steps-grid">
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>The road to the win</p>
+              <h2 className="fa-panel-heading" style={revealStyle(chapterProgress, 0.1, 0.21)}>Eight steps.<br /><em>One winner.</em></h2>
+              <div className="fa-steps-grid" style={revealStyle(chapterProgress, 0.23, 0.38)}>
                 <div><span>01</span><b>Acquire</b><small>Buy your foundation</small></div>
                 <div><span>02</span><b>Operate</b><small>Boardroom decisions</small></div>
                 <div><span>03</span><b>Move the market</b><small>Decisions hit your stock</small></div>
@@ -469,20 +513,20 @@ export function Hero() {
                 <div><span>07</span><b>Get funded</b><small>Win the cheques</small></div>
                 <div><span>08</span><b>Win</b><small>Highest total cheque value</small></div>
               </div>
-              <p className="fa-journey-description">Each simulation has its own winner. The overall winner is decided across all eight steps.</p>
+              <p className="fa-journey-description" style={revealStyle(chapterProgress, 0.45, 0.56)}>Each simulation has its own winner. The overall winner is decided across all eight steps.</p>
             </div>
           )}
 
           {chapter === "finale" && (
             <div className="fa-journey-panel fa-journey-panel--finale">
-              <p className="fa-journey-kicker label-mono">Not just a college event.</p>
-              <h2 className="fa-finale-quote">“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
-              <p className="fa-finale-manifesto">BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
-              <div className="fa-contact-row">
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>Not just a college event.</p>
+              <h2 className="fa-finale-quote" style={revealStyle(chapterProgress, 0.1, 0.23)}>“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
+              <p className="fa-finale-manifesto" style={revealStyle(chapterProgress, 0.28, 0.39)}>BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
+              <div className="fa-contact-row" style={revealStyle(chapterProgress, 0.4, 0.51)}>
                 <a href="mailto:foundersaffair@gmail.com">foundersaffair@gmail.com</a>
                 <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer">@eic.foundersaffair ↗</a>
               </div>
-              <span className="fa-registration-pending label-mono">Registration details to be announced</span>
+              <span className="fa-registration-pending label-mono" style={revealStyle(chapterProgress, 0.53, 0.63)}>Registration details to be announced</span>
             </div>
           )}
         </div>
