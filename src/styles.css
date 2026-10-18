@@ -704,80 +704,34 @@ footer a:hover { color:#b8734a; }
   transform: translate(-50%,-50%) rotate(45deg);
   box-shadow: 0 0 80px rgba(184,115,74,.12);
 }
-/* Ten Pound Feather Inspired Pinned Architectural Frame */
-.fa-pinned-frame {
+.fa-journey-top {
   position: absolute;
-  inset: clamp(1rem, 2.5vw, 2.5rem);
-  z-index: 4;
-  border: 1px solid rgba(184, 115, 74, 0.16);
-  pointer-events: none;
-  border-radius: 2px;
-}
-.fa-frame-corner {
-  position: absolute;
+  z-index: 5;
+  top: clamp(1.2rem, 3vh, 2.2rem);
+  left: clamp(1rem, 4vw, 4rem);
+  right: clamp(1rem, 4vw, 4rem);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: rgba(237, 231, 217, 0.42);
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
+  justify-content: flex-end;
+  pointer-events: none;
 }
-.fa-frame-cross {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 0.9rem;
-  height: 0.9rem;
-  color: #b8734a;
-  font-size: 0.75rem;
-  line-height: 1;
-  font-weight: 300;
-  opacity: 0.85;
-}
-.fa-frame-tag {
-  white-space: nowrap;
-}
-.fa-frame-corner--tl { top: -0.55rem; left: 0.75rem; }
-.fa-frame-corner--tr { top: -0.55rem; right: 0.75rem; }
-.fa-frame-corner--bl { bottom: -0.55rem; left: 0.75rem; }
-.fa-frame-corner--br { bottom: -0.55rem; right: 0.75rem; }
-
-.fa-frame-edge {
-  position: absolute;
-  top: 50%;
-  color: rgba(237, 231, 217, 0.22);
-  font-size: 0.46rem;
-  letter-spacing: 0.22em;
-  white-space: nowrap;
-}
-.fa-frame-edge--left {
-  left: 0.5rem;
-  transform: translateY(-50%) rotate(-90deg);
-  transform-origin: left center;
-}
-.fa-frame-edge--right {
-  right: 0.5rem;
-  transform: translateY(-50%) rotate(90deg);
-  transform-origin: right center;
-}
-
-.fa-journey-top,
 .fa-journey-bottom {
   position: absolute;
   z-index: 5;
-  left: clamp(1rem,4vw,4rem);
-  right: clamp(1rem,4vw,4rem);
+  bottom: clamp(1rem, 3vh, 2rem);
+  left: clamp(1rem, 4vw, 4rem);
+  right: clamp(1rem, 4vw, 4rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: rgba(237,231,217,.62);
-  font-size: .56rem;
-  letter-spacing: .15em;
+  color: rgba(237, 231, 217, 0.62);
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(237, 231, 217, 0.2);
   pointer-events: none;
 }
-.fa-journey-top { top: clamp(5rem,9vh,6.5rem); }
-.fa-journey-bottom { bottom: clamp(1rem,3vh,2rem); padding-top: .85rem; border-top: 1px solid rgba(237,231,217,.2); }
 .fa-journey-bottom-station {
   display: inline-flex;
   align-items: center;
@@ -1012,7 +966,7 @@ footer a:hover { color:#b8734a; }
 @media (max-width: 767px) {
   .fa-journey-hero { height: 900svh; min-height: 900vh; }
   .fa-journey-sticky { min-height: 520px; }
-  .fa-journey-top { top: 5.2rem; left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
+  .fa-journey-top { top: 1rem; left: 1rem; right: 1rem; justify-content: flex-end; }
   .fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
   .fa-journey-wordmark { font-size: 1rem; }
   .fa-journey-edition { max-width: 7.5rem; line-height: 1.45; }
@@ -1042,10 +996,6 @@ footer a:hover { color:#b8734a; }
   .fa-contact-row { flex-direction: column; gap: .85rem; }
   .fa-registration-pending { font-size: .42rem; line-height: 1.5; }
   .fa-journey-scroll-cue { right: .7rem; bottom: 16%; font-size: .4rem; }
-  .fa-pinned-frame { inset: .5rem; }
-  .fa-frame-edge { display: none; }
-  .fa-frame-tag { display: none; }
-  .fa-frame-cross { font-size: .65rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fa-journey-scroll-cue span { animation: none; }

@@ -165,37 +165,8 @@ export function Hero() {
         <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
         <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.12 + smoothStep(0.08, 0.27, progress) * 0.38 - smoothStep(0.84, 0.97, progress) * 0.2 }} />
-        
-        {/* Pinned Editorial Architectural Frame (Ten Pound Feather inspiration) */}
-        <div className="fa-pinned-frame" aria-hidden="true">
-          <div className="fa-frame-corner fa-frame-corner--tl">
-            <span className="fa-frame-cross">+</span>
-            <span className="fa-frame-tag label-mono">SEC. 01 // EIC ARCHIVE</span>
-          </div>
-          <div className="fa-frame-corner fa-frame-corner--tr">
-            <span className="fa-frame-tag label-mono">28.5355° N, 77.3910° E</span>
-            <span className="fa-frame-cross">+</span>
-          </div>
-          <div className="fa-frame-corner fa-frame-corner--bl">
-            <span className="fa-frame-cross">+</span>
-            <span className="fa-frame-tag label-mono">CORP. SIMULATION // 2026</span>
-          </div>
-          <div className="fa-frame-corner fa-frame-corner--br">
-            <span className="fa-frame-tag label-mono">STATION // {chapter.toUpperCase()}</span>
-            <span className="fa-frame-cross">+</span>
-          </div>
-
-          <div className="fa-frame-edge fa-frame-edge--left label-mono">
-            <span>FOUNDERS’ AFFAIR · TWO-DAY EXECUTIVE SIMULATION</span>
-          </div>
-          <div className="fa-frame-edge fa-frame-edge--right label-mono">
-            <span>BUILD · RUN · MOVE · SELL · FUND // 5 C-SUITE ROLES</span>
-          </div>
-        </div>
 
         <div className="fa-journey-top label-mono">
-          <a href="#top" className="fa-journey-wordmark" aria-label="Founders’ Affair — return to opening">FA<span> / </span>EIC</a>
-          <span className="fa-journey-edition">A TWO-DAY BUSINESS SIMULATION</span>
           <button type="button" className="fa-sound-toggle" onClick={toggleSound} aria-pressed={soundEnabled}>
             <svg className={"fa-sound-escapement" + (soundEnabled ? " is-on" : "")} viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2 2" opacity="0.6" />
@@ -216,17 +187,16 @@ export function Hero() {
 
         <div className="fa-journey-content" aria-live="polite">
           {chapter === "opening" && (
-            <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: 1 - smoothStep(0.78, 0.99, chapterProgress) }}>
+            <div className="fa-journey-panel fa-journey-panel--opening" style={{ opacity: 1 - smoothStep(0.18, 0.52, chapterProgress) }}>
               <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="fa-opening-eic-logo" />
-              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.12, 0.22)}>Entrepreneurship & Innovation Cell presents</p>
-              <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.23, 0.32)} />
-              <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.3, 0.4)}>Scroll to enter the experience</p>
+              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.06, 0.16)}>Entrepreneurship & Innovation Cell presents</p>
+              <span className="fa-opening-line" style={revealStyle(chapterProgress, 0.14, 0.22)} />
+              <p className="fa-opening-prompt label-mono" style={revealStyle(chapterProgress, 0.18, 0.28)}>Scroll to enter the experience</p>
             </div>
           )}
 
           {chapter === "brand" && (
             <div className="fa-journey-panel fa-journey-panel--brand" style={{ opacity: 1 - smoothStep(0.9, 0.995, chapterProgress) }}>
-              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>EIC Presents</p>
               <h1 className="fa-main-title" style={revealStyle(chapterProgress, 0.08, 0.22)}><span>Founders’</span><em>Affair</em></h1>
               <p className="fa-brand-subtitle" style={revealStyle(chapterProgress, 0.25, 0.36)}>Ideas. People. Opportunities.</p>
               <span className="fa-brand-rule" style={revealStyle(chapterProgress, 0.36, 0.43)} />
@@ -316,7 +286,7 @@ export function Hero() {
         <div className="fa-journey-bottom label-mono">
           <span className="fa-journey-bottom-station">
             <span className="fa-journey-bottom-pulse" aria-hidden="true" />
-            <span>FOUNDERS’ AFFAIR <i>—</i> EIC</span>
+            <span>FOUNDERS’ AFFAIR</span>
           </span>
           <span className="fa-journey-progress"><i style={{ transform: "scaleX(" + progress + ")" }} /></span>
           <span>{String(Math.round(progress * 100)).padStart(3, "0")}<i> / 100</i></span>
