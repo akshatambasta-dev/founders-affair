@@ -16,7 +16,12 @@ The repository now keeps the reusable project context in version control. You sh
 - `docs/creative-brief.md` — written storyboard of the reference video and the approved 8-scene website sequence.
 - `docs/event-facts.md` — facts extracted from the 16-slide pitch deck, including roles, simulation flow, event copy and contacts; also lists unconfirmed details.
 - `docs/immersive-storyboard-prototype.md` — current prototype scene composition, scene engineering notes and asset provenance.
+- `docs/antigravity-master-prompt.md` — complete copy/paste prompt for a fresh Antigravity session.
 - `.agents/skills/founders-affair/SKILL.md` — reusable workflow for implementation, QA and safe release preparation.
+
+## Recommended: use the full master prompt
+
+Open [docs/antigravity-master-prompt.md](antigravity-master-prompt.md) and paste its contents into Antigravity for the complete task context. The short starter below is enough for small follow-up tasks.
 
 ## Copy/paste starter request
 
