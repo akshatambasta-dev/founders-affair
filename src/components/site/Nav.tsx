@@ -59,7 +59,7 @@ export function Nav() {
               data-cursor="cta"
               className="label-mono rounded-full bg-copper px-5 py-2.5 text-on-accent transition-colors hover:bg-ink"
             >
-              Register interest
+              Contact the team
             </a>
           </li>
         </ul>

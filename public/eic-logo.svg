@@ -1,10 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" role="img" aria-labelledby="title">
-<title id="title">Entrepreneurship &amp; Innovation Cell — EIC</title>
-<rect width="600" height="360" fill="#1f1f1f"/>
-<g fill="#ede7d9" font-family="Arial, Helvetica, sans-serif" font-weight="800">
-<text x="90" y="285" font-size="285" letter-spacing="-20">eic.</text>
-<text x="390" y="68" font-size="21" text-anchor="end">ENTREPRENEURSHIP</text>
-<text x="390" y="91" font-size="21" text-anchor="end">&amp; INNOVATION</text>
-<text x="390" y="114" font-size="21" text-anchor="end">CELL</text>
-</g>
+  <title id="title">Entrepreneurship &amp; Innovation Cell — EIC</title>
+  <g fill="#ede7d9" font-family="Arial, Helvetica, sans-serif" font-weight="800">
+    <text x="90" y="285" font-size="285" letter-spacing="-20">eic.</text>
+    <text x="390" y="68" font-size="21" text-anchor="end">ENTREPRENEURSHIP</text>
+    <text x="390" y="91" font-size="21" text-anchor="end">&amp; INNOVATION</text>
+    <text x="390" y="114" font-size="21" text-anchor="end">CELL</text>
+  </g>
 </svg>
