@@ -4,13 +4,15 @@ This prototype implements the approved scene order in src/components/site/StoryT
 
 ## Scene order and object intent
 
-1. Woven opening (EIC): two woven sheets fill the viewport and part from the centre. The EIC logo and presenter copy sit over the fabric.
+1. Mechanical Iris Aperture opening (EIC): an 8-blade brushed-copper and dark-steel precision iris diaphragm fills the viewport and rotates open on scroll. The EIC logo and presenter copy sit centered over the aperture.
 2. Gear aperture (Founders’ Affair reveal): one concentric gear gate sits on the camera path. Its 48 teeth are evenly spaced and its nested rings share one centre.
 3. Continuous corridor: one dark interior shell, a centreline, regularly spaced ribs, copper milestone collars, twelve equally repeated brackets and twenty longitudinal rails establish perspective and fill the view.
-4. Five executive-role passage: five centred gates at fixed depth intervals accompany the C-suite text. They are a sequence along the same corridor, not a scatter of props.
-5. Two-day simulation: Day 1 has a three-ring station; Day 2 has a converging investor portal. These are positioned at their matching scroll chapters.
-6. Three-part statement: three large rings are aligned on one plane for the Build / Move / Fund beat.
-7. Curtain chamber: paired woven panels open from the centre to reveal a warmer portal and calmer final frame.
+4. Five executive-role passage: five distinct architectural stations along the corridor: CEO diamond crest, CFO hexagonal valuation vault, CMO radial broadcast fin, COO clockwork meshed gear train, CTO octagonal tech matrix.
+5. Two-day simulation:
+   - Day 1: 3D Volumetric Financial Depth terrain with dynamic candlestick bars along the floor and walls, framing the central Market Arch.
+   - Day 2: Business Conclave Investor Rotunda with 6 vertical illuminated columns framing the portal.
+6. Three-part statement: three large rings for Build / Move / Fund architecturally grounded with an industrial cross-beam and vertical copper mounting pylons.
+7. Mechanical Iris finale: an 8-blade copper/dark-steel iris diaphragm opens into a calm, resolved final portal.
 
 ## Visual and motion rules
 

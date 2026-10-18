@@ -69,39 +69,64 @@ function ring(radius: number, tube: number, material: THREE.Material, z: number,
   return mesh;
 }
 
-function curtain(scene: THREE.Scene, cfg: {
-  width: number; height: number; centerX: number; z: number; side: number;
-  role: "opening" | "finale"; material: THREE.Material;
-}) {
-  const geometry = new THREE.PlaneGeometry(cfg.width, cfg.height, 72, 56);
-  const attr = geometry.attributes.position;
-  const base = new Float32Array(attr.array as Float32Array);
-  const mesh = new THREE.Mesh(geometry, cfg.material);
-  mesh.position.set(cfg.centerX, 0, cfg.z);
-  mesh.frustumCulled = false;
-  scene.add(mesh);
-  return { mesh, base, side: cfg.side, width: cfg.width, role: cfg.role };
-}
+// --- MECHANICAL IRIS APERTURE (Replaces Fabric Curtain) ---
+// Composed of 8 overlapping brushed-metal / copper blades mounted on radial pivots.
+// Opening expands blades synchronously with mechanical precision.
+function createMechanicalAperture(
+  scene: THREE.Scene,
+  z: number,
+  outerRadius: number,
+  bladeMat1: THREE.Material,
+  bladeMat2: THREE.Material,
+  keep: <T>(item: T) => T,
+) {
+  const group = new THREE.Group();
+  group.position.z = z;
 
-function animateCurtain(item: ReturnType<typeof curtain>, p: number, time: number, reduced: boolean) {
-  const attr = item.mesh.geometry.attributes.position;
-  const arr = attr.array as Float32Array;
-  const slide = item.role === "opening" ? smooth(.045, .22, p) * 16 : smooth(.81, .95, p) * 18;
-  const t = reduced ? 0 : time * .65;
-  for (let i = 0; i < item.base.length / 3; i++) {
-    const k = i * 3;
-    const bx = item.base[k], by = item.base[k + 1];
-    const worldX = bx + item.mesh.position.x;
-    const weight = item.side < 0
-      ? smooth(-item.width, 0, worldX)
-      : 1 - smooth(0, item.width, worldX);
-    arr[k] = bx + item.side * slide * weight;
-    arr[k + 1] = by + Math.sin(worldX * .33 + p * 16) * .12 * weight;
-    arr[k + 2] = Math.sin(worldX * .78 + t + by * .08) * .34
-      + Math.sin(worldX * 1.7 - by * .13 + t * .5) * .11;
+  // Outer housing ring and collar
+  const housing = ring(outerRadius + 0.6, 0.45, bladeMat2, 0, 64);
+  const housingCollar = ring(outerRadius + 0.2, 0.15, bladeMat1, -0.1, 64);
+  keep(housing.geometry); keep(housingCollar.geometry);
+  group.add(housing, housingCollar);
+
+  const numBlades = 8;
+  const blades: THREE.Group[] = [];
+  const bladeLength = outerRadius * 1.35;
+  const bladeWidth = outerRadius * 0.72;
+
+  // Blade shape: tapered curved leaf
+  const bladeShape = new THREE.Shape();
+  bladeShape.moveTo(0, 0);
+  bladeShape.lineTo(bladeWidth * 0.45, bladeLength * 0.35);
+  bladeShape.quadraticCurveTo(bladeWidth * 0.95, bladeLength * 0.8, bladeWidth * 0.4, bladeLength);
+  bladeShape.lineTo(-bladeWidth * 0.35, bladeLength * 0.75);
+  bladeShape.quadraticCurveTo(-bladeWidth * 0.2, bladeLength * 0.3, 0, 0);
+
+  const bladeGeom = keep(new THREE.ExtrudeGeometry(bladeShape, {
+    depth: 0.08,
+    bevelEnabled: true,
+    bevelSegments: 2,
+    steps: 1,
+    bevelSize: 0.02,
+    bevelThickness: 0.02,
+  }));
+
+  for (let i = 0; i < numBlades; i++) {
+    const angle = (i / numBlades) * Math.PI * 2;
+    const bladePivot = new THREE.Group();
+    bladePivot.position.set(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius, (i % 2) * 0.1);
+    bladePivot.rotation.z = angle + Math.PI / 2;
+
+    const bladeMesh = new THREE.Mesh(bladeGeom, i % 2 === 0 ? bladeMat1 : bladeMat2);
+    bladeMesh.rotation.z = 0.22;
+    bladePivot.add(bladeMesh);
+
+    group.add(bladePivot);
+    blades.push(bladePivot);
   }
-  attr.needsUpdate = true;
-  item.mesh.geometry.computeVertexNormals();
+
+  scene.add(group);
+  return { group, blades, numBlades, outerRadius };
 }
 
 export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
@@ -123,7 +148,11 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     let endPortal: THREE.Group | null = null;
     let endGlow: THREE.Mesh | null = null;
     let openingWarmLight: THREE.PointLight | null = null;
-    const cloths: Array<ReturnType<typeof curtain>> = [];
+    let openingIris: ReturnType<typeof createMechanicalAperture> | null = null;
+    let finaleIris: ReturnType<typeof createMechanicalAperture> | null = null;
+    const roleGates: THREE.Group[] = [];
+    const stockBars: THREE.Mesh[] = [];
+
     const resources = new Set<{ dispose?: () => void }>();
     const keep = <T,>(item: T): T => {
       if (item && (typeof item === "object" || typeof item === "function")) resources.add(item as { dispose?: () => void });
@@ -158,83 +187,66 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         if (floorMap) floorMap.repeat.set(2, 8);
 
         const metal = keep(new THREE.MeshStandardMaterial({
-          color: "#899184", map: metalMap, metalness: .82, roughness: .38,
+          color: "#899184", map: metalMap, metalness: .85, roughness: .34,
         }));
         const darkSteel = keep(new THREE.MeshStandardMaterial({
-          color: "#29312c", map: metalMap, metalness: .82, roughness: .5,
+          color: "#1c2320", map: metalMap, metalness: .88, roughness: .45,
         }));
         const copper = keep(new THREE.MeshStandardMaterial({
-          color: "#a66d48", metalness: .78, roughness: .29,
+          color: "#b8734a", metalness: .82, roughness: .26,
           emissive: "#3e190b", emissiveIntensity: .42,
         }));
         const copperGlow = keep(new THREE.MeshStandardMaterial({
           color: "#b8734a", metalness: .34, roughness: .24,
-          emissive: "#b8734a", emissiveIntensity: 1.4,
+          emissive: "#b8734a", emissiveIntensity: 1.45,
         }));
         const emerald = keep(new THREE.MeshStandardMaterial({
-          color: "#245c43", metalness: .72, roughness: .38,
-          emissive: "#0b3d2e", emissiveIntensity: .52,
+          color: "#0b3d2e", metalness: .78, roughness: .35,
+          emissive: "#06271e", emissiveIntensity: .65,
         }));
         const ivoryMetal = keep(new THREE.MeshStandardMaterial({
-          color: "#c8c1ad", metalness: .54, roughness: .44,
-          emissive: "#4c493d", emissiveIntensity: .24,
-        }));
-        const woven = keep(new THREE.MeshPhysicalMaterial({
-          color: "#ede7d9", map: weaveMap, roughness: .92, metalness: .02,
-          side: THREE.DoubleSide, clearcoat: .02,
+          color: "#ede7d9", metalness: .6, roughness: .4,
+          emissive: "#5c5647", emissiveIntensity: .25,
         }));
         const floorMaterial = keep(new THREE.MeshStandardMaterial({
-          color: "#1a211c", map: floorMap, metalness: .58, roughness: .28, side: THREE.DoubleSide,
+          color: "#131a15", map: floorMap, metalness: .65, roughness: .25, side: THREE.DoubleSide,
         }));
         const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#d8c8a6" }));
-        const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#10120f", side: THREE.DoubleSide }));
+        const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#080a08", side: THREE.DoubleSide }));
 
         // --- LIGHTING ---
-        // Global ambient
         scene.add(new THREE.HemisphereLight(0xd5d8c8, 0x0a100c, 1.45));
 
-        // Key light — angled from above-left
         const key = new THREE.DirectionalLight(0xe1d4b8, 2.2);
         key.position.set(-8, 10, 12); scene.add(key);
 
-        // Edge fill — emerald tint from behind
         const edge = new THREE.DirectionalLight(0x3e8a65, 2.2);
         edge.position.set(8, -2, -20); scene.add(edge);
 
-        // ★ Warm ivory light illuminating the opening curtains
         openingWarmLight = new THREE.PointLight("#ede0c4", 120, 42, 2);
-        openingWarmLight.position.set(0, 0, 22);
+        openingWarmLight.position.set(0, 0, 24);
         scene.add(openingWarmLight);
 
-        // Copper accent near the gear gate
         const addLight = (color: string, power: number, distance: number, pos: [number, number, number]) => {
           const light = new THREE.PointLight(color, power, distance, 2);
           light.position.set(...pos); scene.add(light);
         };
         addLight("#b8734a", 96, 32, [0, 1.6, -5]);
-        // Emerald atmosphere in early tunnel
-        addLight("#246b4c", 68, 40, [-5, 4, -30]);
-        // Copper milestone at midpoint
-        addLight("#b8734a", 58, 32, [0, 0, -52]);
-        // Emerald glow in role section
-        addLight("#2e5748", 65, 36, [0, 2, -64]);
-        // Copper at Day 1/Day 2 transition
-        addLight("#b8734a", 58, 30, [0, 0, -72]);
-        // Emerald at Day 2
-        addLight("#2e5748", 55, 34, [0, 2, -94]);
-        // Strong copper for the ring triptych
-        addLight("#b8734a", 82, 38, [-7, 0, -118]);
-        // Warm finale lighting
-        addLight("#e1cda8", 88, 48, [0, 2.5, -148]);
+        addLight("#246b4c", 72, 40, [-5, 4, -30]);
+        addLight("#b8734a", 65, 32, [0, 0, -52]);
+        addLight("#2e5748", 68, 36, [0, 2, -64]);
+        addLight("#b8734a", 62, 30, [0, 0, -74]);
+        addLight("#0b3d2e", 80, 38, [0, 3, -94]);
+        addLight("#b8734a", 85, 38, [-7, 0, -118]);
+        addLight("#e1cda8", 92, 48, [0, 2.5, -148]);
         addLight("#b8734a", 54, 30, [0, 0, -159]);
 
         // --- CONTINUOUS TUNNEL SHELL ---
-        // Ribs and rails share this same centreline and fill the camera frame.
         const shellGeometry = keep(new THREE.CylinderGeometry(12.7, 12.7, 138, 64, 1, true));
         shellGeometry.rotateX(Math.PI / 2);
         const shellMaterial = keep(new THREE.MeshStandardMaterial({
-          color: "#17241b", map: metalMap, metalness: .74, roughness: .51,
-          side: THREE.BackSide, emissive: "#061b12", emissiveIntensity: .55,
+          color: "#111a14", map: metalMap, metalness: .78, roughness: .48,
+          side: THREE.BackSide, emissive: "#05150d", emissiveIntensity: .6,
         }));
         const shell = new THREE.Mesh(shellGeometry, shellMaterial);
         shell.position.z = -65; scene.add(shell);
@@ -244,14 +256,13 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.set(0, -12.52, -61); scene.add(floor);
 
-        // One rib every 4.28 units; every fourth becomes a visible copper milestone collar.
-        // Thicker ribs for a solid machined look.
+        // Tunnel ribs with copper milestones
         for (let i = 0; i < 31; i++) {
           const z = -4 - i * 4.28;
           const milestone = i % 4 === 0;
           const rib = ring(
             milestone ? 12.12 : 12.34,
-            milestone ? .22 : .1,     // thicker ribs
+            milestone ? .22 : .1,
             milestone ? copper : darkSteel,
             z,
           );
@@ -259,12 +270,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           if (milestone) {
             const inner = ring(11.86, .04, copperGlow, z - .11);
             keep(inner.geometry); scene.add(inner);
-            // Add a subtle copper glow at each milestone
             const milestoneGlow = new THREE.PointLight("#b8734a", 16, 12, 2);
             milestoneGlow.position.set(0, 0, z);
             scene.add(milestoneGlow);
           }
-          // Twelve equally spaced brackets repeat on alternate ribs.
           if (i % 2 === 0) {
             const geom = keep(new THREE.BoxGeometry(.32, 1.2, .5));
             const brackets = new THREE.InstancedMesh(geom, metal, 12);
@@ -279,7 +288,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           }
         }
 
-        // Twenty axial rails create a continuous vanishing point; four are copper.
+        // Longitudinal rails
         for (let j = 0; j < 20; j++) {
           const a0 = j / 20 * Math.PI * 2;
           const points = [];
@@ -293,8 +302,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           scene.add(new THREE.Mesh(geom, j % 4 === 0 ? copper : emerald));
         }
 
-        // --- SCENE 2: GEAR GATE ---
-        // One centered gear gate, with evenly indexed teeth and concentric machined rings.
+        // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 19) ---
+        openingIris = createMechanicalAperture(scene, 19, 9.8, copper, darkSteel, keep);
+
+        // --- SCENE 2: GEAR GATE (Z = -6.6) ---
         gear = new THREE.Group(); gear.position.z = -6.6;
         const gateRings = [
           ring(10.1, .24, darkSteel, 0),
@@ -321,49 +332,113 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         scene.add(gear);
 
-        // --- SCENE 4: FIVE ROLE GATES ---
-        // Five gates at fixed depth intervals, mapped to the five C-suite roles.
-        const roleColors = [copperGlow, emerald, ivoryMetal, copper, emerald];
-        for (let i = 0; i < 5; i++) {
-          const z = -43 - i * 4.5;
-          const outer = ring(4.4 + (i % 2) * .42, .14, roleColors[i], z, 72);
-          const inner = ring(3.78 + (i % 2) * .42, .05, darkSteel, z - .14, 72);
-          keep(outer.geometry); keep(inner.geometry); scene.add(outer, inner);
+        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -43 to -61) ---
+        // Instead of uniform rings, each role has a distinct architectural geometry:
+        // 0: CEO (Crown / Crest Diamond), 1: CFO (Hexagonal Valuation Vault), 2: CMO (Radial Broadcast Prism),
+        // 3: COO (Interlocking Meshed Gear Train), 4: CTO (Octagonal Tech Matrix)
+        const roleZ = [-43, -47.5, -52, -56.5, -61];
+        for (let r = 0; r < 5; r++) {
+          const roleGroup = new THREE.Group();
+          roleGroup.position.z = roleZ[r];
+
+          if (r === 0) {
+            // CEO: Royal Crest diamond gate
+            const diamondGeom = keep(new THREE.TorusGeometry(4.5, .15, 4, 4));
+            diamondGeom.rotateZ(Math.PI / 4);
+            const diamond = new THREE.Mesh(diamondGeom, copperGlow);
+            const innerRing = ring(3.6, .04, darkSteel, -.1, 64);
+            roleGroup.add(diamond, innerRing);
+          } else if (r === 1) {
+            // CFO: Hexagonal Valuation Vault gate
+            const hexGeom = keep(new THREE.TorusGeometry(4.4, .16, 6, 6));
+            const hex = new THREE.Mesh(hexGeom, copper);
+            const innerTicker = ring(3.8, .04, emerald, -.1, 64);
+            roleGroup.add(hex, innerTicker);
+          } else if (r === 2) {
+            // CMO: Waveform Broadcast aperture
+            const waveRing = ring(4.5, .14, ivoryMetal, 0, 72);
+            for (let b = 0; b < 6; b++) {
+              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 1.8, .08)), copperGlow);
+              const angle = (b / 6) * Math.PI * 2;
+              fin.position.set(Math.cos(angle) * 4.4, Math.sin(angle) * 4.4, -.05);
+              fin.rotation.z = angle;
+              roleGroup.add(fin);
+            }
+            roleGroup.add(waveRing);
+          } else if (r === 3) {
+            // COO: Clockwork Meshed Gear Train gate
+            const gearRing = ring(4.3, .18, darkSteel, 0, 72);
+            for (let g = 0; g < 18; g++) {
+              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.35, .18, .22)), copper);
+              const angle = (g / 18) * Math.PI * 2;
+              cog.position.set(Math.cos(angle) * 4.35, Math.sin(angle) * 4.35, 0);
+              cog.rotation.z = angle;
+              roleGroup.add(cog);
+            }
+            roleGroup.add(gearRing);
+          } else {
+            // CTO: Octagonal Tech Grid Matrix
+            const octGeom = keep(new THREE.TorusGeometry(4.4, .15, 8, 8));
+            const oct = new THREE.Mesh(octGeom, emerald);
+            const coreSpoke = new THREE.Mesh(keep(new THREE.BoxGeometry(8.2, .08, .08)), copperGlow);
+            roleGroup.add(oct, coreSpoke);
+          }
+
+          scene.add(roleGroup);
+          roleGates.push(roleGroup);
         }
 
-        // --- SCENE 4b: DAY 1 STATION ---
-        // Day 1 station with three decision rings on one shared plane.
+        // --- SCENE 4b: DAY 1 - STOCK MARKET & BOARDROOM CRISIS (Z = -74) ---
+        // 3D Volumetric Financial Candlestick / Order-Book Depth Terrain along the corridor floor & walls
         dayOne = new THREE.Group(); dayOne.position.z = -74;
-        for (let i = -1; i <= 1; i++) {
-          const outer = ring(i === 0 ? 3.15 : 2.45, .13, i === 0 ? copperGlow : metal, 0, 72);
-          const inner = ring(i === 0 ? 2.85 : 2.17, .035, emerald, -.16, 64);
-          outer.position.x = inner.position.x = i * 5.4;
-          keep(outer.geometry); keep(inner.geometry); dayOne.add(outer, inner);
+
+        // Central Floor Market Arch
+        const marketArch = ring(4.8, .16, copperGlow, 0, 64);
+        dayOne.add(marketArch);
+
+        // 3D Financial Candlestick / Volumetric Depth bars flanked on both sides of corridor
+        const candleGeom = keep(new THREE.BoxGeometry(.42, 1, .42));
+        const barHeights = [2.2, 4.1, 1.6, 5.4, 3.2, 4.8, 2.7, 6.1, 3.8, 5.0];
+        for (let i = 0; i < barHeights.length; i++) {
+          const h = barHeights[i];
+          const isUp = i % 3 !== 1;
+          const barMesh = new THREE.Mesh(candleGeom, isUp ? emerald : copper);
+          const side = i % 2 === 0 ? -1 : 1;
+          const x = side * (5.5 + (i * 0.45));
+          const zOffset = (i - 5) * 1.8;
+          barMesh.scale.set(1, h, 1);
+          barMesh.position.set(x, -6.5 + (h / 2), zOffset);
+          dayOne.add(barMesh);
+          stockBars.push(barMesh);
         }
         scene.add(dayOne);
 
-        // --- SCENE 4c: DAY 2 STATION ---
-        // Day 2 converges into a larger marketplace portal.
+        // --- SCENE 4c: DAY 2 - INVESTOR MARKETPLACE ROTUNDA (Z = -94) ---
+        // Inspired directly by the emerald-and-copper Business Conclave stage photo:
+        // Majestic architectural rotunda with 6 vertical copper light columns framing the portal.
         dayTwo = new THREE.Group(); dayTwo.position.z = -94;
-        const dayTwoParts = [
-          ring(4.2, .18, copper, 0, 80),
-          ring(3.7, .065, copperGlow, -.18, 80),
-          ring(2.1, .1, emerald, -.1, 64),
-          ring(2.1, .1, emerald, -.1, 64),
-        ];
-        dayTwoParts[2].position.x = -4.15; dayTwoParts[3].position.x = 4.15;
-        dayTwoParts.forEach((part) => { keep(part.geometry); dayTwo!.add(part); });
+
+        const conclavePortal = ring(4.8, .22, copper, 0, 80);
+        const innerConclaveRing = ring(4.2, .08, copperGlow, -.15, 80);
+        dayTwo.add(conclavePortal, innerConclaveRing);
+
+        // 6 Vertical architectural illuminated light columns (seen in Business Conclave reference photo)
+        const colGeom = keep(new THREE.BoxGeometry(.28, 11.5, .32));
+        for (let c = 0; c < 6; c++) {
+          const colMesh = new THREE.Mesh(colGeom, c % 2 === 0 ? copper : emerald);
+          const x = (c - 2.5) * 2.8;
+          colMesh.position.set(x, 0, -.3);
+          dayTwo.add(colMesh);
+        }
         scene.add(dayTwo);
 
-        // --- SCENE 5: THREE-RING TRIPTYCH (BUILD / MOVE / FUND) ---
-        // Three rings form one grounded, intentional architectural triptych.
+        // --- SCENE 5: THREE-RING TRIPTYCH (BUILD / MOVE / FUND) (Z = -116) ---
         ringTrio = new THREE.Group(); ringTrio.position.z = -116;
         const triad = [
           { x: -7.35, r: 3.5, material: copperGlow },
           { x: 0, r: 4.05, material: emerald },
           { x: 7.35, r: 3.5, material: ivoryMetal },
         ];
-        // Horizontal grounding cross-beam linking all three rings
         const triptychBeamGeom = keep(new THREE.BoxGeometry(20.5, .28, .36));
         const triptychBeam = new THREE.Mesh(triptychBeamGeom, darkSteel);
         triptychBeam.position.set(0, -4.6, -.1);
@@ -376,7 +451,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const bridge = new THREE.Mesh(keep(new THREE.BoxGeometry(.08, item.r * 1.7, .12)), index === 1 ? copperGlow : darkSteel);
           bridge.position.set(item.x, 0, -.08);
 
-          // Vertical mounting pylon anchoring each ring to the floor beam
           const pylonGeom = keep(new THREE.BoxGeometry(.22, 2.2, .24));
           const pylon = new THREE.Mesh(pylonGeom, copper);
           pylon.position.set(item.x, -item.r - 0.4, -.08);
@@ -388,8 +462,9 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         });
         scene.add(ringTrio);
 
-        // --- SCENE 6: CURTAIN CHAMBER & FINALE ---
-        // A quiet chamber and a single warm portal beyond the parted curtains.
+        // --- SCENE 6: FINALE MECHANICAL IRIS & CALM CHAMBER (Z = -142 to -164) ---
+        finaleIris = createMechanicalAperture(scene, -142, 8.5, copperGlow, darkSteel, keep);
+
         const endWall = new THREE.Mesh(keep(new THREE.PlaneGeometry(48, 38)), darkBackdrop);
         endWall.position.z = -164.5; scene.add(endWall);
         endPortal = new THREE.Group(); endPortal.position.z = -160.8;
@@ -404,6 +479,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }));
         endGlow = new THREE.Mesh(keep(new THREE.CircleGeometry(5.82, 96)), endGlowMat);
         endGlow.position.z = -160.55; scene.add(endGlow);
+
         for (let i = 0; i < 7; i++) {
           const marker = new THREE.Mesh(
             keep(new THREE.BoxGeometry(.065, .035, 3.2)),
@@ -412,26 +488,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           marker.position.set(0, -12.35, -139 - i * 2.4); scene.add(marker);
         }
 
-        // --- CURTAINS ---
-        // Opening woven curtain pair
-        const openingClothMaterial = keep(new THREE.MeshPhysicalMaterial({
-          color: "#ede7d9", map: weaveMap, roughness: .88, metalness: .02, side: THREE.DoubleSide,
-        }));
-        cloths.push(
-          curtain(scene, { width: 27, height: 36, centerX: -13.5, z: 17, side: -1, role: "opening", material: openingClothMaterial }),
-          curtain(scene, { width: 27, height: 36, centerX: 13.5, z: 17, side: 1, role: "opening", material: openingClothMaterial }),
-        );
-        // Finale curtain pair
-        const finaleClothMaterial = keep(new THREE.MeshPhysicalMaterial({
-          color: "#bfb39a", map: weaveMap, roughness: .88, metalness: .01,
-          side: THREE.DoubleSide, transparent: true, opacity: .98,
-        }));
-        cloths.push(
-          curtain(scene, { width: 17.5, height: 35, centerX: -8.75, z: -142, side: -1, role: "finale", material: finaleClothMaterial }),
-          curtain(scene, { width: 17.5, height: 35, centerX: 8.75, z: -142, side: 1, role: "finale", material: finaleClothMaterial }),
-        );
-
-        // --- BOLTS (instanced decoration) ---
+        // Bolts
         const boltGeometry = keep(new THREE.SphereGeometry(.08, 8, 6));
         const bolts = new THREE.InstancedMesh(boltGeometry, copperGlow, 128);
         const bolt = new THREE.Object3D();
@@ -478,14 +535,42 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             endPortal!.rotation.z = reduced ? 0 : smooth(.82, 1, p) * .04;
             (endGlow!.material as THREE.MeshBasicMaterial).opacity = .08 + smooth(.85, .99, p) * .28;
 
-            // Fade opening warm light as curtains part
+            // Animate Opening Iris: Starts closed, smoothly rotates blades outwards as progress moves 0.03 -> 0.22
+            if (openingIris) {
+              const irisOpen = smooth(.03, .22, p);
+              openingIris.blades.forEach((blade, index) => {
+                const baseRot = (index / openingIris!.numBlades) * Math.PI * 2 + Math.PI / 2;
+                blade.rotation.z = baseRot + (irisOpen * 1.35);
+              });
+            }
+
+            // Animate Finale Iris: Closes/opens into the quiet portal as progress moves 0.80 -> 0.96
+            if (finaleIris) {
+              const finaleOpen = smooth(.80, .96, p);
+              finaleIris.blades.forEach((blade, index) => {
+                const baseRot = (index / finaleIris!.numBlades) * Math.PI * 2 + Math.PI / 2;
+                blade.rotation.z = baseRot + (finaleOpen * 1.35);
+              });
+            }
+
+            // Animate Dynamic Financial Candlestick Pulses (Stock Market fluctuation)
+            if (!reduced && stockBars.length > 0) {
+              for (let s = 0; s < stockBars.length; s++) {
+                const pulse = 1 + Math.sin(t * 2.4 + s * 1.1) * 0.12;
+                stockBars[s].scale.y = pulse * (2 + (s % 4));
+              }
+            }
+
+            // Animate Role Gates subtly on approach
+            roleGates.forEach((gate, gIdx) => {
+              gate.rotation.z = reduced ? 0 : Math.sin(t * 0.8 + gIdx) * 0.08;
+            });
+
+            // Fade opening warm light as mechanical iris opens
             if (openingWarmLight) {
               openingWarmLight.intensity = 120 * (1 - smooth(.04, .2, p));
             }
 
-            for (const item of cloths) {
-              if ((item.role === "opening" && p < .28) || (item.role === "finale" && p > .76)) animateCurtain(item, p, t, reduced);
-            }
             renderer!.render(scene!, camera!);
           }
           frame = window.requestAnimationFrame(render);
