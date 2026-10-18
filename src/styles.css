@@ -704,6 +704,63 @@ footer a:hover { color:#b8734a; }
   transform: translate(-50%,-50%) rotate(45deg);
   box-shadow: 0 0 80px rgba(184,115,74,.12);
 }
+/* Ten Pound Feather Inspired Pinned Architectural Frame */
+.fa-pinned-frame {
+  position: absolute;
+  inset: clamp(1rem, 2.5vw, 2.5rem);
+  z-index: 4;
+  border: 1px solid rgba(184, 115, 74, 0.16);
+  pointer-events: none;
+  border-radius: 2px;
+}
+.fa-frame-corner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(237, 231, 217, 0.42);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+}
+.fa-frame-cross {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  color: #b8734a;
+  font-size: 0.75rem;
+  line-height: 1;
+  font-weight: 300;
+  opacity: 0.85;
+}
+.fa-frame-tag {
+  white-space: nowrap;
+}
+.fa-frame-corner--tl { top: -0.55rem; left: 0.75rem; }
+.fa-frame-corner--tr { top: -0.55rem; right: 0.75rem; }
+.fa-frame-corner--bl { bottom: -0.55rem; left: 0.75rem; }
+.fa-frame-corner--br { bottom: -0.55rem; right: 0.75rem; }
+
+.fa-frame-edge {
+  position: absolute;
+  top: 50%;
+  color: rgba(237, 231, 217, 0.22);
+  font-size: 0.46rem;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+}
+.fa-frame-edge--left {
+  left: 0.5rem;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: left center;
+}
+.fa-frame-edge--right {
+  right: 0.5rem;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: right center;
+}
+
 .fa-journey-top,
 .fa-journey-bottom {
   position: absolute;
@@ -721,6 +778,24 @@ footer a:hover { color:#b8734a; }
 }
 .fa-journey-top { top: clamp(5rem,9vh,6.5rem); }
 .fa-journey-bottom { bottom: clamp(1rem,3vh,2rem); padding-top: .85rem; border-top: 1px solid rgba(237,231,217,.2); }
+.fa-journey-bottom-station {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.fa-journey-bottom-pulse {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: #b8734a;
+  box-shadow: 0 0 8px rgba(184, 115, 74, 0.85);
+  animation: fa-station-glow 2.4s ease-in-out infinite alternate;
+}
+@keyframes fa-station-glow {
+  from { opacity: 0.45; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.15); box-shadow: 0 0 12px rgba(184, 115, 74, 1); }
+}
+
 .fa-journey-wordmark { display: none;
   color: #ede7d9;
   font-family: Georgia, "Times New Roman", serif;
@@ -750,6 +825,22 @@ footer a:hover { color:#b8734a; }
 }
 .fa-sound-toggle:hover,
 .fa-sound-toggle[aria-pressed="true"] { border-color: #b8734a; color: #d9a780; }
+.fa-sound-escapement {
+  display: inline-block;
+  vertical-align: middle;
+  color: rgba(237, 231, 217, 0.5);
+  transition: color 0.3s ease, filter 0.3s ease;
+  transform-origin: 12px 12px;
+}
+.fa-sound-escapement.is-on {
+  color: #b8734a;
+  filter: drop-shadow(0 0 5px rgba(184, 115, 74, 0.7));
+  animation: fa-escapement-spin 5.5s linear infinite;
+}
+@keyframes fa-escapement-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .fa-sound-indicator { width: .36rem; height: .36rem; border-radius: 50%; background: #8a8a80; }
 .fa-sound-indicator.is-on { background: #b8734a; box-shadow: 0 0 12px rgba(184,115,74,.75); }
 .fa-journey-content {
@@ -951,10 +1042,16 @@ footer a:hover { color:#b8734a; }
   .fa-contact-row { flex-direction: column; gap: .85rem; }
   .fa-registration-pending { font-size: .42rem; line-height: 1.5; }
   .fa-journey-scroll-cue { right: .7rem; bottom: 16%; font-size: .4rem; }
+  .fa-pinned-frame { inset: .5rem; }
+  .fa-frame-edge { display: none; }
+  .fa-frame-tag { display: none; }
+  .fa-frame-cross { font-size: .65rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fa-journey-scroll-cue span { animation: none; }
   .fa-journey-panel { animation: none; }
+  .fa-sound-escapement.is-on { animation: none; }
+  .fa-journey-bottom-pulse { animation: none; }
 }
 
 .fa-journey-hero { position: relative; }

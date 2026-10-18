@@ -109,7 +109,11 @@ export function Hero() {
     const audio = audioRef.current;
     if (!audio) return;
     audio.oscillators.forEach((oscillator) => {
-      try { oscillator.stop(); } catch {}
+      try {
+        oscillator.stop();
+      } catch {
+        // silence stop errors on tear-down
+      }
     });
     void audio.context.close();
   }, []);
@@ -161,12 +165,52 @@ export function Hero() {
         <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
         <div className="fa-journey-shade" aria-hidden="true" style={{ opacity: 0.12 + smoothStep(0.08, 0.27, progress) * 0.38 - smoothStep(0.84, 0.97, progress) * 0.2 }} />
+        
+        {/* Pinned Editorial Architectural Frame (Ten Pound Feather inspiration) */}
+        <div className="fa-pinned-frame" aria-hidden="true">
+          <div className="fa-frame-corner fa-frame-corner--tl">
+            <span className="fa-frame-cross">+</span>
+            <span className="fa-frame-tag label-mono">SEC. 01 // EIC ARCHIVE</span>
+          </div>
+          <div className="fa-frame-corner fa-frame-corner--tr">
+            <span className="fa-frame-tag label-mono">28.5355° N, 77.3910° E</span>
+            <span className="fa-frame-cross">+</span>
+          </div>
+          <div className="fa-frame-corner fa-frame-corner--bl">
+            <span className="fa-frame-cross">+</span>
+            <span className="fa-frame-tag label-mono">CORP. SIMULATION // 2026</span>
+          </div>
+          <div className="fa-frame-corner fa-frame-corner--br">
+            <span className="fa-frame-tag label-mono">STATION // {chapter.toUpperCase()}</span>
+            <span className="fa-frame-cross">+</span>
+          </div>
+
+          <div className="fa-frame-edge fa-frame-edge--left label-mono">
+            <span>FOUNDERS’ AFFAIR · TWO-DAY EXECUTIVE SIMULATION</span>
+          </div>
+          <div className="fa-frame-edge fa-frame-edge--right label-mono">
+            <span>BUILD · RUN · MOVE · SELL · FUND // 5 C-SUITE ROLES</span>
+          </div>
+        </div>
+
         <div className="fa-journey-top label-mono">
           <a href="#top" className="fa-journey-wordmark" aria-label="Founders’ Affair — return to opening">FA<span> / </span>EIC</a>
           <span className="fa-journey-edition">A TWO-DAY BUSINESS SIMULATION</span>
           <button type="button" className="fa-sound-toggle" onClick={toggleSound} aria-pressed={soundEnabled}>
-            <span className={"fa-sound-indicator" + (soundEnabled ? " is-on" : "")} aria-hidden="true" />
-            {soundEnabled ? "Sound on" : "Sound off"}
+            <svg className={"fa-sound-escapement" + (soundEnabled ? " is-on" : "")} viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2 2" opacity="0.6" />
+              <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+              <line x1="12" y1="1.5" x2="12" y2="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="12" y1="19.5" x2="12" y2="22.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="1.5" y1="12" x2="4.5" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="19.5" y1="12" x2="22.5" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="4.58" y1="4.58" x2="6.7" y2="6.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="17.3" y1="17.3" x2="19.42" y2="19.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="4.58" y1="19.42" x2="6.7" y2="17.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="17.3" y1="6.7" x2="19.42" y2="4.58" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+            </svg>
+            <span>{soundEnabled ? "Sound on" : "Sound off"}</span>
           </button>
         </div>
 
@@ -270,7 +314,10 @@ export function Hero() {
         </div>
 
         <div className="fa-journey-bottom label-mono">
-          <span>FOUNDERS’ AFFAIR <i>—</i> EIC</span>
+          <span className="fa-journey-bottom-station">
+            <span className="fa-journey-bottom-pulse" aria-hidden="true" />
+            <span>FOUNDERS’ AFFAIR <i>—</i> EIC</span>
+          </span>
           <span className="fa-journey-progress"><i style={{ transform: "scaleX(" + progress + ")" }} /></span>
           <span>{String(Math.round(progress * 100)).padStart(3, "0")}<i> / 100</i></span>
         </div>

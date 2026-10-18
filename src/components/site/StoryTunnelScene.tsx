@@ -33,27 +33,43 @@ function makePattern(kind: "weave" | "metal" | "floor") {
       x.fillRect((i * 73) % 512, (i * 151) % 512, 1, 3 + i % 4);
     }
   } else if (kind === "metal") {
+    // TPF-inspired fine-line banknote guilloche & copperplate engraving hatching
     const g = x.createLinearGradient(0, 0, 512, 512);
-    g.addColorStop(0, "#3a413a"); g.addColorStop(.5, "#171c18"); g.addColorStop(1, "#303831");
+    g.addColorStop(0, "#28322c"); g.addColorStop(.5, "#141c17"); g.addColorStop(1, "#222a25");
     x.fillStyle = g; x.fillRect(0, 0, 512, 512);
-    for (let i = 0; i < 512; i += 3) {
-      x.strokeStyle = i % 18 === 0 ? "rgba(205,213,193,.1)" : "rgba(0,0,0,.16)";
-      x.lineWidth = i % 18 === 0 ? 1.4 : .7;
-      x.beginPath(); x.moveTo(0, i); x.lineTo(512, i - 1); x.stroke();
+
+    // Fine-line undulating guilloche curves
+    for (let i = 0; i < 512; i += 8) {
+      x.strokeStyle = i % 24 === 0 ? "rgba(184,115,74,.24)" : "rgba(205,213,193,.09)";
+      x.lineWidth = i % 24 === 0 ? 1.2 : 0.6;
+      x.beginPath();
+      for (let y = 0; y <= 512; y += 16) {
+        const xOffset = Math.sin(y * 0.05 + i * 0.1) * 6;
+        if (y === 0) x.moveTo(i + xOffset, y);
+        else x.lineTo(i + xOffset, y);
+      }
+      x.stroke();
     }
-    for (let i = 0; i < 120; i++) {
-      x.strokeStyle = i % 2 ? "rgba(184,115,74,.14)" : "rgba(231,226,210,.1)";
-      x.beginPath(); x.moveTo((i * 97) % 512, (i * 179) % 512); x.lineTo((i * 97) % 512 + 3 + i % 16, (i * 179) % 512 + i % 7 - 2); x.stroke();
+    // Precision micro-coordinates & cross-hatch
+    for (let i = 0; i < 180; i++) {
+      x.strokeStyle = i % 2 ? "rgba(184,115,74,.2)" : "rgba(231,226,210,.12)";
+      x.beginPath();
+      x.moveTo((i * 97) % 512, (i * 179) % 512);
+      x.lineTo((i * 97) % 512 + 4 + i % 14, (i * 179) % 512 + (i % 7) - 3);
+      x.stroke();
     }
   } else {
-    x.fillStyle = "#111611"; x.fillRect(0, 0, 512, 512);
+    x.fillStyle = "#0e1511"; x.fillRect(0, 0, 512, 512);
+    // Engraved floor tiles with copper reveal inlays
+    for (let i = 0; i < 512; i += 32) {
+      x.strokeStyle = "rgba(184,115,74,.18)";
+      x.lineWidth = 1;
+      x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 512); x.stroke();
+      x.beginPath(); x.moveTo(0, i); x.lineTo(512, i); x.stroke();
+    }
     for (let i = 0; i < 512; i += 8) {
       x.strokeStyle = i % 32 === 0 ? "rgba(184,115,74,.16)" : "rgba(255,255,255,.025)";
       x.beginPath(); x.moveTo(i, 0); x.lineTo(i - 80, 512); x.stroke();
-    }
-    for (let i = 0; i < 64; i++) {
-      x.fillStyle = "rgba(0,0,0,.13)";
-      x.beginPath(); x.ellipse((i * 83) % 512, (i * 139) % 512, 8 + i % 21, 1 + i % 4, .08, 0, Math.PI * 2); x.fill();
     }
   }
   const tex = new THREE.CanvasTexture(c);
@@ -556,8 +572,32 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
 
-            camera!.position.set(Math.sin(p * Math.PI * 2.2) * .32, Math.sin(p * Math.PI * 2.8) * .22, 38 - p * 190);
-            camera!.lookAt(Math.sin(p * Math.PI * 2.2) * .18, .08 * Math.sin(p * 5), camera!.position.z - 20);
+            // Multi-directional cinematic camera flight path:
+            // S-curves horizontally (X), elevates and swoops over stations (Y), and banks dynamically (roll Z)
+            const camZ = 38 - p * 190;
+            
+            // Gateway dampening: broad sweeping flight between stations, but smoothly aligned
+            // when passing through key gates: Opening Iris (p ≈ 0.05), Gear Gate (p ≈ 0.235), Finale Portal (p ≈ 0.95)
+            const gateDamp = Math.max(0.2, 1 - 0.45 * Math.exp(-Math.pow((p - 0.235) / 0.06, 2))
+                                             - 0.65 * Math.exp(-Math.pow((p - 0.05) / 0.05, 2))
+                                             - 0.55 * Math.exp(-Math.pow((p - 0.95) / 0.06, 2)));
+
+            // Horizontal sway: swoops left towards Boardroom, right towards Stock Market, centers at Ring Triad
+            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp;
+            // Vertical pitch: elevates over the opening gate, dips towards the boardroom table, climbs into rotunda
+            const camY = (Math.cos(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp;
+            camera!.position.set(camX, camY, camZ);
+
+            // Dynamic look-ahead with banking & yaw towards upcoming stations
+            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp;
+            const lookTargetY = Math.cos((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp;
+            camera!.lookAt(lookTargetX, lookTargetY, camZ - 22);
+
+            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly)
+            if (!reduced) {
+              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp;
+              camera!.rotation.z = bankAngle;
+            }
 
             // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
             gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
