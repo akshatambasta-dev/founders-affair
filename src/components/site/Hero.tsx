@@ -1,69 +1,112 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const controls = ["Colour", "Type", "Spacing", "Radius", "Opacity"] as const;
-const word = ["Founder’s", "Affair"];
-const colors = ["#ede7d9", "#b8734a", "#0b3d2e", "#2e5748"];
+const chapters = [
+  {
+    eyebrow: "The entrepreneurial instinct",
+    line: "Ideas are easy.",
+    accent: "Execution is everything.",
+    note: "A live business simulation where decisions have consequences.",
+  },
+  {
+    eyebrow: "Build something that matters",
+    line: "Make a move.",
+    accent: "Change the market.",
+    note: "Teams become companies, take executive roles, and navigate uncertainty together.",
+  },
+  {
+    eyebrow: "From concept to conviction",
+    line: "Find your people.",
+    accent: "Make them believe.",
+    note: "Build a brand, pitch your company, and compete for simulated investor backing.",
+  },
+];
 
-/** Minimal, interactive studio-style landing hero. */
+/** Scroll-tied editorial opening inspired by the supplied motion reference. */
 export function Hero() {
-  const [active, setActive] = useState<(typeof controls)[number]>("Colour");
+  const sectionRef = useRef<HTMLElement>(null);
+  const [progress, setProgress] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => setReducedMotion(media.matches);
+    updateMotion();
+    media.addEventListener?.("change", updateMotion);
+
+    let raf = 0;
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        const distance = Math.max(1, section.offsetHeight - window.innerHeight);
+        setProgress(Math.max(0, Math.min(1, -rect.top / distance)));
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      media.removeEventListener?.("change", updateMotion);
+    };
+  }, []);
+
+  const chapterIndex = progress < 0.34 ? 0 : progress < 0.68 ? 1 : 2;
+  const chapter = chapters[chapterIndex];
+  const sceneStyle = {
+    "--scroll-progress": progress,
+    "--scene-scale": reducedMotion ? 1 : 1 + progress * 0.12,
+    "--scene-y": reducedMotion ? 0 : progress * -5,
+  } as React.CSSProperties;
 
   return (
-    <section id="top" className="theme-dark studio-hero" data-mode={active}>
-      <div className="studio-hero__grid" aria-hidden="true" />
-      <div className="studio-hero__meta label-mono">
-        <span>Two-day business simulation</span>
-        <span>Teams of five / Day 01—02</span>
-      </div>
-      <div className="studio-hero__center">
-        <p className="studio-hero__index label-mono">A live business simulation</p>
-        <h1 aria-label="Founder’s Affair">
-          {word.map((line, lineIndex) => (
-            <span className={`studio-word studio-word--${lineIndex + 1}`} key={line}>
-              {Array.from(line).map((letter, index) => (
-                <span
-                  aria-hidden="true"
-                  key={`${letter}-${index}`}
-                  style={{ "--letter-color": colors[(index + lineIndex) % colors.length] } as React.CSSProperties}
-                >
-                  {letter}
-                </span>
-              ))}
-            </span>
-          ))}
-        </h1>
-        <p className="studio-hero__description">
-          Teams of five build a company from the ground up. Make the calls, move the market, and
-          make people believe in what you built.
-        </p>
-        <div className="studio-hero__actions">
-          <a href="#how" className="studio-cta">Explore the simulation <span aria-hidden="true">↗</span></a>
-          <a href="#contact" className="studio-link">Register your team <span aria-hidden="true">↓</span></a>
+    <section id="top" ref={sectionRef} className="fa-scroll-hero theme-dark" style={sceneStyle}>
+      <div className="fa-scroll-sticky">
+        <div className="fa-scene" aria-hidden="true">
+          <div className="fa-scene__grain" />
+          <div className="fa-scene__ring fa-scene__ring--outer" />
+          <div className="fa-scene__ring fa-scene__ring--mid" />
+          <div className="fa-scene__ring fa-scene__ring--inner" />
+          <div className="fa-scene__core">
+            <div className="fa-scene__core-inner" />
+          </div>
+          <div className="fa-scene__shard fa-scene__shard--one" />
+          <div className="fa-scene__shard fa-scene__shard--two" />
+          <div className="fa-scene__shard fa-scene__shard--three" />
+          <div className="fa-scene__shard fa-scene__shard--four" />
         </div>
-      </div>
 
-      <div className="studio-experiment" aria-label="Interactive design token experiment">
-        <div className="studio-experiment__sample" aria-hidden="true">
-          <span>BUILD</span><i /><span>RUN</span><i /><span>FUND</span>
+        <div className="fa-scroll-top label-mono">
+          <span className="fa-eic-mark" aria-label="Entrepreneurship & Innovation Cell">
+            <span className="fa-eic-mark__symbol">EIC</span>
+            <span className="fa-eic-mark__label">Entrepreneurship<br />& Innovation Cell</span>
+          </span>
+          <span>Business Conclave <i> / </i> 01—03</span>
         </div>
-        <p className="label-mono">Hover the letters. Tune the system.</p>
-        <div role="group" aria-label="Design token controls">
-          {controls.map((control) => (
-            <button
-              type="button"
-              key={control}
-              aria-pressed={active === control}
-              onClick={() => setActive(control)}
-            >
-              <span aria-hidden="true">{{ Colour: "◉", Type: "Aa", Spacing: "↔", Radius: "▢", Opacity: "◒" }[control]}</span>
-              <span>{control}</span>
-            </button>
-          ))}
+
+        <div className="fa-scroll-copy" key={chapterIndex}>
+          <p className="fa-scroll-eyebrow label-mono">{chapter.eyebrow}</p>
+          <h1 aria-label="Founders' Affair">
+            <span>{chapter.line}</span>
+            <em>{chapter.accent}</em>
+          </h1>
+          <p className="fa-scroll-note">{chapter.note}</p>
+          <div className="fa-scroll-actions">
+            <a href="#about" className="studio-cta">Discover the conclave <span aria-hidden="true">↗</span></a>
+            <a href="#how" className="studio-link">How it works <span aria-hidden="true">↓</span></a>
+          </div>
         </div>
-      </div>
-      <div className="studio-hero__bottom label-mono">
-        <span>Acquire / Operate / Pitch / Get funded</span>
-        <a href="#about" aria-label="Scroll to overview">Scroll to begin <span aria-hidden="true">↓</span></a>
+
+        <div className="fa-scroll-bottom label-mono">
+          <span>FOUNDERS’ AFFAIR <i>—</i> A BUSINESS CONCLAVE</span>
+          <span className="fa-scroll-progress"><i style={{ transform: `scaleX(${progress})` }} /></span>
+          <span>{String(Math.round(progress * 100)).padStart(3, "0")}<i> / 100</i></span>
+        </div>
+        <a className="fa-scroll-cue label-mono" href="#about" aria-label="Scroll to learn more"><span /> Scroll to explore</a>
       </div>
     </section>
   );
