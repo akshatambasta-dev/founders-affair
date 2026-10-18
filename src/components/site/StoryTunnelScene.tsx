@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 type SceneRefs = {
   progressRef: { current: number };
@@ -85,57 +86,110 @@ function ring(radius: number, tube: number, material: THREE.Material, z: number,
   return mesh;
 }
 
-// --- MECHANICAL IRIS APERTURE (Replaces Fabric Curtain) ---
-// Composed of 8 overlapping brushed-metal / copper blades mounted on radial pivots.
-// Opening expands blades synchronously with mechanical precision.
+// --- YUKIHATSUNE-INSPIRED 8-BLADE INDUSTRIAL BULKHEAD IRIS GATE ---
+// Engineered industrial circular gate with:
+// 1. Heavy cylindrical bulkhead collar with 16 radial locking lugs and circumferential hex bolts.
+// 2. Concentric copper drive track and guide channel.
+// 3. 8 mechanical pivot knuckles with cylindrical hinge pins and radial linkages.
+// 4. 8 swept, curved bulkhead blades with stepped overlapping laps, raised copper reinforcing spines, and bevelled edges.
+// 5. Precise radial retraction motion revealing the central tunnel portal.
 function createMechanicalAperture(
   scene: THREE.Scene,
   z: number,
   outerRadius: number,
-  bladeMat1: THREE.Material,
-  bladeMat2: THREE.Material,
+  copperMat: THREE.Material,
+  steelMat: THREE.Material,
   keep: <T>(item: T) => T,
 ) {
   const group = new THREE.Group();
   group.position.z = z;
 
-  // Outer housing ring and collar
-  const housing = ring(outerRadius + 0.6, 0.45, bladeMat2, 0, 64);
-  const housingCollar = ring(outerRadius + 0.2, 0.15, bladeMat1, -0.1, 64);
-  keep(housing.geometry); keep(housingCollar.geometry);
-  group.add(housing, housingCollar);
+  // 1. Heavy outer cylindrical bulkhead housing
+  const mainHousing = ring(outerRadius + 0.95, 0.48, steelMat, 0, 80);
+  const copperDriveTrack = ring(outerRadius + 0.42, 0.16, copperMat, -0.06, 80);
+  const innerBearingCollar = ring(outerRadius + 0.12, 0.09, steelMat, -0.12, 80);
+  keep(mainHousing.geometry); keep(copperDriveTrack.geometry); keep(innerBearingCollar.geometry);
+  group.add(mainHousing, copperDriveTrack, innerBearingCollar);
 
+  // 2. 16 Perimeter radial locking lugs & hex bolts around the bulkhead frame
+  const lugGeom = keep(new THREE.BoxGeometry(0.38, 0.72, 0.36));
+  const boltGeom = keep(new THREE.CylinderGeometry(0.08, 0.08, 0.16, 6));
+  for (let k = 0; k < 16; k++) {
+    const lugAngle = (k / 16) * Math.PI * 2;
+    const lug = new THREE.Mesh(lugGeom, k % 2 === 0 ? copperMat : steelMat);
+    lug.position.set(Math.cos(lugAngle) * (outerRadius + 1.15), Math.sin(lugAngle) * (outerRadius + 1.15), -0.02);
+    lug.rotation.z = lugAngle;
+    group.add(lug);
+
+    const bolt = new THREE.Mesh(boltGeom, copperMat);
+    bolt.position.set(Math.cos(lugAngle) * (outerRadius + 0.65), Math.sin(lugAngle) * (outerRadius + 0.65), 0.16);
+    bolt.rotation.x = Math.PI / 2;
+    group.add(bolt);
+  }
+
+  // 3. 8 Mechanical Pivot Knuckles & Actuators
+  const knuckleGeom = keep(new THREE.CylinderGeometry(0.32, 0.32, 0.22, 18));
+  const pinGeom = keep(new THREE.CylinderGeometry(0.12, 0.12, 0.32, 8));
+  const linkGeom = keep(new THREE.BoxGeometry(0.16, 0.68, 0.12));
+
+  // 4. Swept, curved bulkhead blade shape (smooth interlocking curve with stepped overlap)
   const numBlades = 8;
   const blades: THREE.Group[] = [];
-  const bladeLength = outerRadius * 1.35;
-  const bladeWidth = outerRadius * 0.72;
+  const bladeLength = outerRadius * 1.38;
+  const bladeWidth = outerRadius * 0.74;
 
-  // Blade shape: tapered curved leaf
   const bladeShape = new THREE.Shape();
-  bladeShape.moveTo(0, 0);
-  bladeShape.lineTo(bladeWidth * 0.45, bladeLength * 0.35);
-  bladeShape.quadraticCurveTo(bladeWidth * 0.95, bladeLength * 0.8, bladeWidth * 0.4, bladeLength);
-  bladeShape.lineTo(-bladeWidth * 0.35, bladeLength * 0.75);
-  bladeShape.quadraticCurveTo(-bladeWidth * 0.2, bladeLength * 0.3, 0, 0);
+  bladeShape.moveTo(0, 0); // Root at pivot knuckle
+  bladeShape.quadraticCurveTo(bladeWidth * 0.38, bladeLength * 0.22, bladeWidth * 0.58, bladeLength * 0.48);
+  bladeShape.quadraticCurveTo(bladeWidth * 0.78, bladeLength * 0.82, bladeWidth * 0.32, bladeLength);
+  bladeShape.quadraticCurveTo(-bladeWidth * 0.12, bladeLength * 0.75, -bladeWidth * 0.28, bladeLength * 0.45);
+  bladeShape.quadraticCurveTo(-bladeWidth * 0.22, bladeLength * 0.18, 0, 0);
 
   const bladeGeom = keep(new THREE.ExtrudeGeometry(bladeShape, {
-    depth: 0.08,
+    depth: 0.1,
     bevelEnabled: true,
     bevelSegments: 2,
     steps: 1,
-    bevelSize: 0.02,
-    bevelThickness: 0.02,
+    bevelSize: 0.03,
+    bevelThickness: 0.03,
   }));
+
+  // Raised structural reinforcing rib running along the centerline of each blade
+  const spineGeom = keep(new THREE.BoxGeometry(0.11, bladeLength * 0.76, 0.06));
 
   for (let i = 0; i < numBlades; i++) {
     const angle = (i / numBlades) * Math.PI * 2;
     const bladePivot = new THREE.Group();
-    bladePivot.position.set(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius, (i % 2) * 0.1);
+    // Offset each blade slightly in Z so they slide past each other cleanly like a genuine iris
+    const zLayer = ((i % 4) - 1.5) * 0.08;
+    bladePivot.position.set(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius, zLayer);
     bladePivot.rotation.z = angle + Math.PI / 2;
 
-    const bladeMesh = new THREE.Mesh(bladeGeom, i % 2 === 0 ? bladeMat1 : bladeMat2);
+    // The blade plate
+    const isCopper = i % 2 === 0;
+    const bladeMesh = new THREE.Mesh(bladeGeom, isCopper ? copperMat : steelMat);
     bladeMesh.rotation.z = 0.22;
     bladePivot.add(bladeMesh);
+
+    // Structural reinforcing spine catching highlights
+    const spine = new THREE.Mesh(spineGeom, isCopper ? steelMat : copperMat);
+    spine.position.set(bladeWidth * 0.12, bladeLength * 0.52, 0.09);
+    spine.rotation.z = -0.16;
+    bladePivot.add(spine);
+
+    // Hinge Knuckle assembly at blade root
+    const knuckle = new THREE.Mesh(knuckleGeom, copperMat);
+    knuckle.rotation.x = Math.PI / 2;
+    bladePivot.add(knuckle);
+
+    const pin = new THREE.Mesh(pinGeom, steelMat);
+    pin.rotation.x = Math.PI / 2;
+    bladePivot.add(pin);
+
+    // Mechanical linkage arm reaching to outer collar
+    const link = new THREE.Mesh(linkGeom, steelMat);
+    link.position.set(0, -0.32, 0);
+    bladePivot.add(link);
 
     group.add(bladePivot);
     blades.push(bladePivot);
@@ -321,6 +375,27 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 28) ---
         // Positioned close to camera start (z = 38) so overlapping blades fill the viewport at p = 0
         openingIris = createMechanicalAperture(scene, 28, 8.2, copper, darkSteel, keep);
+
+        // Optional custom model drop-in: if the user places iris-door.glb in /public/, load it
+        try {
+          const gltfLoader = new GLTFLoader();
+          gltfLoader.load(
+            "/iris-door.glb",
+            (gltf) => {
+              if (cancelled || !openingIris) return;
+              gltf.scene.position.set(0, 0, 28);
+              gltf.scene.scale.set(4, 4, 4);
+              openingIris.group.visible = false;
+              scene!.add(gltf.scene);
+            },
+            undefined,
+            () => {
+              // Procedural bulkhead iris remains active
+            }
+          );
+        } catch {
+          // Procedural bulkhead iris remains active
+        }
 
         // --- SCENE 2: GEAR GATE (Z = -6.6) ---
         gear = new THREE.Group(); gear.position.z = -6.6;
