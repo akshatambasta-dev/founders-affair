@@ -10,8 +10,9 @@ Before any project work, read:
 2. [Creative brief and storyboard](docs/creative-brief.md)
 3. [Verified event facts](docs/event-facts.md)
 4. [Current immersive prototype notes](docs/immersive-storyboard-prototype.md)
-5. [Antigravity setup](docs/antigravity-setup.md)
-6. [Reusable Antigravity skill](.agents/skills/founders-affair/SKILL.md)
+5. [Antigravity master prompt](docs/antigravity-master-prompt.md) — copy this into Antigravity for a new session
+6. [Antigravity setup guide](docs/antigravity-setup.md)
+7. [Reusable Antigravity skill](.agents/skills/founders-affair/SKILL.md)
 
 The reference-video storyboard and pitch-deck facts are written into the repo so ordinary follow-up tasks do not require re-uploading the original video or PDF. Update the tracked context when the user explicitly changes or confirms information.
 
