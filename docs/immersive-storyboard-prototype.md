@@ -4,15 +4,15 @@ This prototype implements the approved scene order in src/components/site/StoryT
 
 ## Scene order and object intent
 
-1. Executive Boardroom Monolithic Vault Doors (EIC / Entrance): Two massive brushed dark-emerald vault slabs framed by copper jambs, lintel, and 4 heavy mechanical locking bolts. As the user scrolls, the bolts slide inward and the vault doors slide horizontally apart to the left and right, opening access into the corporate corridor.
-2. Continuous corridor: one dark interior shell, regularly spaced ribs, copper milestone collars, structural brackets and longitudinal rails establishing scale and vanishing-point perspective.
-3. Central statement: "Build the company. Move the market. Win the investors." framed cleanly along the open architectural axis.
-4. Five executive roles (Boardroom Table): An expansive 24-unit executive boardroom table featuring a glowing copper trim and 5 distinct illuminated pedestals spaced horizontally across the room (X = -8.4, -4.2, 0, +4.2, +8.4), aligning directly underneath the 2D HTML role badges (CEO, CFO, CMO, COO, CTO).
+1. Mechanical Iris Aperture opening (EIC): an 8-blade brushed-copper and dark-steel precision iris diaphragm fills the viewport and rotates open on scroll. The EIC logo and presenter copy sit centered over the aperture.
+2. Gear aperture (Founders’ Affair reveal): one concentric gear gate sits on the camera path. Its 48 teeth are evenly spaced and its nested rings share one centre.
+3. Continuous corridor: one dark interior shell, a centreline, regularly spaced ribs, copper milestone collars, twelve equally repeated brackets and twenty longitudinal rails establish perspective and fill the view.
+4. Five executive-role passage: five distinct architectural stations along the corridor: CEO diamond crest, CFO hexagonal valuation vault, CMO radial broadcast fin, COO clockwork meshed gear train, CTO octagonal tech matrix.
 5. Two-day simulation:
    - Day 1: 3D Volumetric Financial Depth terrain with dynamic candlestick bars along the floor and walls, framing the central Market Arch.
    - Day 2: Business Conclave Investor Rotunda with 6 vertical illuminated columns framing the portal.
 6. Three-part statement: three large rings for Build / Move / Fund architecturally grounded with an industrial cross-beam and vertical copper mounting pylons.
-7. Calm Finale Chamber: Resolves into a quiet, warm illuminated circular portal.
+7. Mechanical Iris finale: an 8-blade copper/dark-steel iris diaphragm opens into a calm, resolved final portal.
 
 ## Visual and motion rules
 
