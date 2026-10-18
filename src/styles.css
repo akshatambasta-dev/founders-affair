@@ -955,3 +955,10 @@ footer a:hover { color:#b8734a; }
   .fa-journey-scroll-cue span { animation: none; }
   .fa-journey-panel { animation: none; }
 }
+
+.fa-journey-hero { position: relative; }
+header.theme-dark {
+  background: rgba(8,10,9,.46);
+  border-bottom-color: rgba(237,231,217,.12);
+  backdrop-filter: blur(10px);
+}

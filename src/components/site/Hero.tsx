@@ -128,7 +128,7 @@ const fragmentShader = [
   "  }",
   "  float reveal = smoothstep(0.018, 0.13, u_progress);",
   "  color *= mix(0.13, 1.0, reveal);",
-  "  float vignette = smoothstep(1.48, 0.22, length(vec2(uv.x / max(aspect, 0.7), uv.y) * 1.45));",
+  "  float vignette = 1.0 - smoothstep(0.22, 1.48, length(vec2(uv.x / max(aspect, 0.7), uv.y) * 1.45));",
   "  color *= 0.45 + 0.55 * vignette;",
   "  float filmGrain = hash(vec3(gl_FragCoord.xy, floor(u_time * 24.0))) - 0.5;",
   "  color += filmGrain * 0.012;",
@@ -477,7 +477,7 @@ export function Hero() {
               <p className="fa-journey-kicker label-mono">Not just a college event.</p>
               <h2 className="fa-finale-quote">“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
               <p className="fa-finale-manifesto">BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
-              <div className="fa-contact-row" id="contact">
+              <div className="fa-contact-row">
                 <a href="mailto:foundersaffair@gmail.com">foundersaffair@gmail.com</a>
                 <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer">@eic.foundersaffair ↗</a>
               </div>
@@ -493,11 +493,13 @@ export function Hero() {
         </div>
         {progress < 0.9 && <a className="fa-journey-scroll-cue label-mono" href="#about"><span /> Scroll to travel</a>}
 
-        <span id="about" className="fa-journey-anchor" style={{ top: "45%" }} aria-hidden="true" />
-        <span id="team" className="fa-journey-anchor" style={{ top: "57%" }} aria-hidden="true" />
-        <span id="how" className="fa-journey-anchor" style={{ top: "69%" }} aria-hidden="true" />
-        <span id="experiences" className="fa-journey-anchor" style={{ top: "80%" }} aria-hidden="true" />
+
       </div>
+      <span id="about" className="fa-journey-anchor" style={{ top: "45%" }} aria-hidden="true" />
+      <span id="team" className="fa-journey-anchor" style={{ top: "57%" }} aria-hidden="true" />
+      <span id="how" className="fa-journey-anchor" style={{ top: "69%" }} aria-hidden="true" />
+      <span id="experiences" className="fa-journey-anchor" style={{ top: "80%" }} aria-hidden="true" />
+      <span id="contact" className="fa-journey-anchor" style={{ top: "94%" }} aria-hidden="true" />
     </section>
   );
 }
