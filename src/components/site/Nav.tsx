@@ -38,12 +38,8 @@ export function Nav() {
         className="mx-auto flex max-w-[1600px] items-center justify-between px-5 md:px-10"
         aria-label="Primary"
       >
-        <a
-          href="#top"
-          className="font-display text-lg font-extrabold uppercase tracking-tight text-ink"
-        >
-          Founder's
-          <span className="font-sans font-normal italic normal-case text-ink-accent"> affair</span>
+        <a href="#top" className="flex items-center" aria-label="Founders' Affair home">
+          <img src="/eic-logo.svg" alt="EIC — Entrepreneurship & Innovation Cell" className="h-10 w-auto object-contain" />
         </a>
         <span className="label-mono hidden text-ink-muted lg:block">Two-day simulation</span>
         <ul className="hidden items-center gap-8 md:flex">
