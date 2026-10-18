@@ -719,9 +719,9 @@ footer a:hover { color:#b8734a; }
   letter-spacing: .15em;
   pointer-events: none;
 }
-.fa-journey-top { top: clamp(1.1rem,3.4vh,2.4rem); }
+.fa-journey-top { top: clamp(5rem,9vh,6.5rem); }
 .fa-journey-bottom { bottom: clamp(1rem,3vh,2rem); padding-top: .85rem; border-top: 1px solid rgba(237,231,217,.2); }
-.fa-journey-wordmark {
+.fa-journey-wordmark { display: none;
   color: #ede7d9;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.25rem;
@@ -785,7 +785,7 @@ footer a:hover { color:#b8734a; }
 .fa-journey-panel--opening .fa-journey-kicker { color: rgba(237,231,217,.7); margin-top: .5rem; }
 .fa-opening-line { display: block; width: 1px; height: clamp(2.3rem,7vh,5.3rem); margin: clamp(1.4rem,4vh,3rem) auto 1rem; background: linear-gradient(#b8734a,rgba(184,115,74,0)); }
 .fa-opening-prompt { color: rgba(237,231,217,.48); font-size: .48rem; letter-spacing: .16em; }
-.fa-journey-panel--brand { transform: translateY(calc((1 - var(--journey-progress,0)) * 0px)); }
+.fa-journey-panel--brand { transform: none; }
 .fa-main-title {
   display: flex;
   flex-direction: column;
@@ -921,7 +921,8 @@ footer a:hover { color:#b8734a; }
 @media (max-width: 767px) {
   .fa-journey-hero { height: 900svh; min-height: 900vh; }
   .fa-journey-sticky { min-height: 520px; }
-  .fa-journey-top,.fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
+  .fa-journey-top { top: 5.2rem; left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
+  .fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
   .fa-journey-wordmark { font-size: 1rem; }
   .fa-journey-edition { max-width: 7.5rem; line-height: 1.45; }
   .fa-sound-toggle { padding: .48rem .6rem; font-size: .45rem; gap: .35rem; }
