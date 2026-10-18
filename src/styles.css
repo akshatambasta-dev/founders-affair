@@ -222,8 +222,9 @@
 @utility label-mono { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
 
 :root { --ease-out-expo: cubic-bezier(.16,1,.3,1); --sage-green:#2e5748; }
-html { background:#0a0a0a; }
-body { margin:0; }
+html { background:#0a0a0a; overflow-x: hidden; max-width: 100%; width: 100%; }
+body { margin:0; overflow-x: hidden; max-width: 100%; width: 100%; }
+main { overflow-x: hidden; max-width: 100%; width: 100%; }
 button,a,input { -webkit-tap-highlight-color:transparent; }
 button,a { transition-timing-function:var(--ease-out-expo); }
 
@@ -332,13 +333,13 @@ section:not(#top) { position:relative; scroll-margin-top:5rem; }
 #market article:hover>span { background:#b8734a; color:#0a0a0a; }
 #market button { border-color:#2e5748; transition:transform .25s,background .25s; }
 #market button:hover { transform:translateY(-2px); background:#0b3d2e; color:#ede7d9; }
-#contact { overflow:hidden; padding-block:clamp(5rem,12vw,11rem); background:#0b3d2e; color:#ede7d9; }
-#contact::after { position:absolute; right:-7vw; bottom:-18vw; width:45vw; aspect-ratio:1; border:1px solid #2e5748; border-radius:50%; box-shadow:0 0 0 3rem #0b3d2e,0 0 0 calc(3rem + 1px) #2e5748,0 0 0 7rem #0b3d2e,0 0 0 calc(7rem + 1px) #2e5748; content:""; pointer-events:none; opacity:.75; }
-#contact h2 { font-size:clamp(4rem,10vw,10rem); }
-#contact input { border-color:#2e5748; color:#ede7d9; transition:border-color .25s; }
-#contact input:focus { border-color:#b8734a; }
-#contact form button { border-radius:999px; transition:background .25s,color .25s; }
-#contact form button:hover { background:#ede7d9; color:#0a0a0a; }
+section#contact { overflow:hidden; padding-block:clamp(5rem,12vw,11rem); background:#0b3d2e; color:#ede7d9; }
+section#contact::after { position:absolute; right:-7vw; bottom:-18vw; width:45vw; aspect-ratio:1; border:1px solid #2e5748; border-radius:50%; box-shadow:0 0 0 3rem #0b3d2e,0 0 0 calc(3rem + 1px) #2e5748,0 0 0 7rem #0b3d2e,0 0 0 calc(7rem + 1px) #2e5748; content:""; pointer-events:none; opacity:.75; }
+section#contact h2 { font-size:clamp(4rem,10vw,10rem); }
+section#contact input { border-color:#2e5748; color:#ede7d9; transition:border-color .25s; }
+section#contact input:focus { border-color:#b8734a; }
+section#contact form button { border-radius:999px; transition:background .25s,color .25s; }
+section#contact form button:hover { background:#ede7d9; color:#0a0a0a; }
 footer { padding-top:5rem; }
 footer>div>p:first-child { color:#ede7d9; font-family:var(--font-display); letter-spacing:-.085em; }
 footer>div>p:nth-child(2) { border-color:#2e5748; }
@@ -640,17 +641,24 @@ footer a:hover { color:#b8734a; }
 
 /* Immersive WebGL journey — a single continuous scene controlled by scroll. */
 .fa-journey-hero {
-  height: 850svh;
-  min-height: 850vh;
+  position: relative;
+  height: 900svh;
+  min-height: 900vh;
   overflow: clip;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
   background: #080a09;
   isolation: isolate;
 }
 .fa-journey-sticky {
   position: sticky;
   top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100vw;
   height: 100svh;
-  min-height: 560px;
+  min-height: 540px;
   overflow: hidden;
   padding: 0;
   background: #080a09;
@@ -690,7 +698,7 @@ footer a:hover { color:#b8734a; }
   transform: translate(-50%,-50%) rotateX(67deg);
   box-shadow: 0 0 0 18px rgba(237,231,217,.018), inset 0 0 40px rgba(184,115,74,.12);
 }
-.fa-fallback-ring--one { width: min(100vw,100vh); }
+.fa-fallback-ring--one { width: min(88vw, 88vh); }
 .fa-fallback-ring--two { width: min(75vw,75vh); border-style: dashed; border-color: rgba(237,231,217,.38); }
 .fa-fallback-ring--three { width: min(48vw,48vh); border-color: rgba(11,61,46,.85); }
 .fa-fallback-core {
@@ -959,43 +967,46 @@ footer a:hover { color:#b8734a; }
   writing-mode: vertical-rl;
 }
 .fa-journey-scroll-cue span { width: 1px; height: 2.8rem; background: #b8734a; animation: fa-cue-pulse 1.8s ease-in-out infinite; }
-.fa-journey-anchor { position: absolute; left: 0; width: 1px; height: 1px; overflow: hidden; scroll-margin-top: 1px; }
+.fa-journey-anchor { position: absolute; left: 0; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); pointer-events: none; }
+.fa-journey-anchor::before,
+.fa-journey-anchor::after { content: none !important; display: none !important; width: 0 !important; height: 0 !important; }
 @keyframes fa-panel-in { from { opacity: 0; filter: blur(12px); transform: translateY(1.1rem); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
 .fa-journey-panel--opening { animation: none; }
 .fa-journey-panel--brand { animation: none; }
 @media (max-width: 767px) {
-  .fa-journey-hero { height: 900svh; min-height: 900vh; }
-  .fa-journey-sticky { min-height: 520px; }
+  .fa-journey-hero { height: 900svh; min-height: 900vh; overflow-x: hidden; max-width: 100vw; }
+  .fa-journey-sticky { min-height: 520px; overflow-x: hidden; max-width: 100vw; }
   .fa-journey-top { top: 1rem; left: 1rem; right: 1rem; justify-content: flex-end; }
   .fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
   .fa-journey-wordmark { font-size: 1rem; }
   .fa-journey-edition { max-width: 7.5rem; line-height: 1.45; }
-  .fa-sound-toggle { padding: .48rem .6rem; font-size: .45rem; gap: .35rem; }
-  .fa-journey-content { inset: 12% 1rem 12%; }
-  .fa-opening-eic-logo { width: min(77vw,22rem); }
+  .fa-sound-toggle { padding: .45rem .6rem; font-size: .45rem; gap: .35rem; }
+  .fa-journey-content { inset: 8% 0.75rem 8%; max-width: calc(100vw - 1.5rem); }
+  .fa-journey-panel { width: 100%; max-width: 100%; }
+  .fa-opening-eic-logo { width: min(72vw, 18rem); }
   .fa-journey-kicker { font-size: .48rem; letter-spacing: .14em; }
-  .fa-main-title { font-size: clamp(4.2rem,18vw,7rem); }
-  .fa-brand-subtitle { margin-top: 1.3rem; font-size: .84rem; letter-spacing: .08em; }
+  .fa-main-title { font-size: clamp(3rem, 14vw, 5.5rem); }
+  .fa-brand-subtitle { margin-top: 1.1rem; font-size: .8rem; letter-spacing: .08em; }
   .fa-brand-caption { font-size: .45rem; line-height: 1.5; }
-  .fa-statement { font-size: clamp(2.5rem,11vw,5.2rem); }
-  .fa-panel-heading { font-size: clamp(2.5rem,10vw,4.5rem); }
-  .fa-role-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: .25rem; margin-top: 1.4rem; }
-  .fa-role-grid b { width: clamp(2.7rem,13vw,4rem); font-size: .95rem; }
-  .fa-role-grid span { font-size: .43rem; letter-spacing: 0; }
-  .fa-journey-description { margin-top: 1rem; font-size: .8rem; }
-  .fa-day-grid { gap: .55rem; margin-top: 1.2rem; }
-  .fa-day-grid article { padding: .75rem; }
-  .fa-day-grid h3 { font-size: 1.04rem; }
-  .fa-day-grid p { font-size: .75rem; }
-  .fa-day-activities { font-size: .59rem; }
-  .fa-steps-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; margin-top: 1.1rem; }
-  .fa-steps-grid b { font-size: .9rem; }
-  .fa-steps-grid small { font-size: .62rem; }
-  .fa-finale-quote { font-size: clamp(1.8rem,8vw,3.5rem); }
-  .fa-finale-manifesto { font-size: .48rem; line-height: 1.5; }
-  .fa-contact-row { flex-direction: column; gap: .85rem; }
+  .fa-statement { font-size: clamp(2rem, 9vw, 4.2rem); }
+  .fa-panel-heading { font-size: clamp(2rem, 8.5vw, 3.8rem); }
+  .fa-role-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .25rem; margin-top: 1.2rem; }
+  .fa-role-grid b { width: clamp(2.4rem, 12vw, 3.6rem); font-size: .88rem; }
+  .fa-role-grid span { font-size: .4rem; letter-spacing: 0; }
+  .fa-journey-description { margin-top: 0.9rem; font-size: .78rem; line-height: 1.5; }
+  .fa-day-grid { gap: .55rem; margin-top: 1.1rem; }
+  .fa-day-grid article { padding: .7rem; }
+  .fa-day-grid h3 { font-size: 1rem; }
+  .fa-day-grid p { font-size: .72rem; }
+  .fa-day-activities { font-size: .56rem; }
+  .fa-steps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin-top: 1rem; }
+  .fa-steps-grid b { font-size: .85rem; }
+  .fa-steps-grid small { font-size: .6rem; }
+  .fa-finale-quote { font-size: clamp(1.5rem, 6.5vw, 2.8rem); line-height: 1.12; }
+  .fa-finale-manifesto { font-size: .46rem; line-height: 1.5; }
+  .fa-contact-row { flex-direction: column; gap: .7rem; }
   .fa-registration-pending { font-size: .42rem; line-height: 1.5; }
-  .fa-journey-scroll-cue { right: .7rem; bottom: 16%; font-size: .4rem; }
+  .fa-journey-scroll-cue { right: .6rem; bottom: 16%; font-size: .38rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fa-journey-scroll-cue span { animation: none; }

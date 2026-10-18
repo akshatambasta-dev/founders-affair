@@ -57,6 +57,22 @@ function revealStyle(
   };
 }
 
+function revealStylePersistent(
+  progress: number,
+  start: number,
+  end: number,
+): CSSProperties {
+  const entering = smoothStep(start, end, progress);
+  const translateY = (1 - entering) * 18;
+  const blur = (1 - entering) * 5;
+  return {
+    opacity: entering,
+    transform: `translate3d(0, ${translateY.toFixed(1)}px, 0)`,
+    filter: `blur(${blur.toFixed(1)}px)`,
+    willChange: "opacity, transform, filter",
+  };
+}
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
@@ -271,14 +287,14 @@ export function Hero() {
 
           {chapter === "finale" && (
             <div className="fa-journey-panel fa-journey-panel--finale">
-              <p className="fa-journey-kicker label-mono" style={revealStyle(chapterProgress, 0.02, 0.12)}>Not just a college event.</p>
-              <h2 className="fa-finale-quote" style={revealStyle(chapterProgress, 0.1, 0.23)}>“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
-              <p className="fa-finale-manifesto" style={revealStyle(chapterProgress, 0.28, 0.39)}>BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
-              <div className="fa-contact-row" style={revealStyle(chapterProgress, 0.4, 0.51)}>
+              <p className="fa-journey-kicker label-mono" style={revealStylePersistent(chapterProgress, 0.02, 0.12)}>Not just a college event.</p>
+              <h2 className="fa-finale-quote" style={revealStylePersistent(chapterProgress, 0.1, 0.23)}>“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
+              <p className="fa-finale-manifesto" style={revealStylePersistent(chapterProgress, 0.28, 0.39)}>BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
+              <div className="fa-contact-row" style={revealStylePersistent(chapterProgress, 0.4, 0.51)}>
                 <a href="mailto:foundersaffair@gmail.com">foundersaffair@gmail.com</a>
                 <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer">@eic.foundersaffair ↗</a>
               </div>
-              <span className="fa-registration-pending label-mono" style={revealStyle(chapterProgress, 0.53, 0.63)}>Registration details to be announced</span>
+              <span className="fa-registration-pending label-mono" style={revealStylePersistent(chapterProgress, 0.53, 0.63)}>Registration details to be announced</span>
             </div>
           )}
         </div>
