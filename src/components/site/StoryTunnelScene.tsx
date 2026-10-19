@@ -261,6 +261,21 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         // Dark Green: Deep Emerald (#0b3d2e), Deep Forest Patina (#08241b)
         // Accent Green: Luminous Pine Emerald (#1aa072 / #116345)
         // Set against deep Obsidian Black (#0A0A0A) & Charcoal (#141816)
+        // --- GATE SPECIFIC HIGH-CONTRAST MATERIALS ---
+        // Lighter, luminous greens for gates: Mint-Emerald (#3db88f / #52d6a4) against Charcoal/Black (#0a0a0a / #18201c)
+        // This ensures opening iris aperture blades, rotating gear gate teeth/spokes, and C-suite gates are clearly visible during motion
+        const gateMint = keep(new THREE.MeshStandardMaterial({
+          color: "#3db88f", metalness: .4, roughness: .22,
+          emissive: "#1b6b4e", emissiveIntensity: 1.35,
+        }));
+        const gateLuminous = keep(new THREE.MeshStandardMaterial({
+          color: "#52d6a4", metalness: .3, roughness: .18,
+          emissive: "#28946c", emissiveIntensity: 1.6,
+        }));
+        const gateTeal = keep(new THREE.MeshStandardMaterial({
+          color: "#105666", metalness: .65, roughness: .32,
+          emissive: "#093844", emissiveIntensity: .65,
+        }));
         const darkSteel = keep(new THREE.MeshStandardMaterial({
           color: "#18201c", map: metalMap, metalness: .88, roughness: .42,
         }));
@@ -380,7 +395,8 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
 
         // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 28) ---
-        openingIris = createMechanicalAperture(scene, 28, 8.2, sage, darkSteel, keep);
+        // Light mint green blades against dark black steel housing so opening animation is clearly visible
+        openingIris = createMechanicalAperture(scene, 28, 8.2, gateMint, darkSteel, keep);
 
         // Optional custom model drop-in: if the user places iris-door.glb in /public/, load it
         try {
@@ -404,20 +420,20 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
 
         // --- SCENE 2: GEAR GATE (Z = -6.6) ---
-        // High-contrast luminous green against obsidian black
+        // High-contrast luminous lighter green with black so rotating motion is sharply visible
         gear = new THREE.Group(); gear.position.z = -6.6;
         const gateRings = [
-          ring(10.6, .32, charcoal, 0),
-          ring(9.9, .15, emeraldGlow, -.18),
-          ring(7.6, .22, sage, -.38),
-          ring(5.4, .16, emerald, -.56),
-          ring(3.4, .09, emeraldGlow, -.82),
+          ring(10.6, .32, deepBlack, 0),
+          ring(9.9, .15, gateLuminous, -.18),
+          ring(7.6, .22, gateMint, -.38),
+          ring(5.4, .16, darkSteel, -.56),
+          ring(3.4, .09, gateLuminous, -.82),
         ];
         gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
         
-        // High-visibility luminous green drive teeth that pop crisply against obsidian space
+        // High-visibility luminous lighter green drive teeth that pop crisply against obsidian space
         const toothGeometry = keep(new THREE.BoxGeometry(1.2, .48, .85));
-        const teeth = new THREE.InstancedMesh(toothGeometry, emeraldGlow, 36);
+        const teeth = new THREE.InstancedMesh(toothGeometry, gateLuminous, 36);
         const tooth = new THREE.Object3D();
         for (let i = 0; i < 36; i++) {
           const a = (i / 36) * Math.PI * 2;
@@ -428,10 +444,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         teeth.instanceMatrix.needsUpdate = true; gear.add(teeth);
 
-        // Heavy counter-rotating inner spoke hub in high-contrast Sage & Luminous Emerald
+        // Heavy counter-rotating inner spoke hub in high-contrast Mint & Luminous Green
         const spokeGeometry = keep(new THREE.BoxGeometry(4.2, .18, .28));
         for (let i = 0; i < 8; i++) {
-          const spoke = new THREE.Mesh(spokeGeometry, i % 2 === 0 ? sage : emeraldGlow);
+          const spoke = new THREE.Mesh(spokeGeometry, i % 2 === 0 ? gateMint : gateLuminous);
           const a = (i / 8) * Math.PI * 2;
           spoke.position.set(Math.cos(a) * 4.1, Math.sin(a) * 4.1, -.28);
           spoke.rotation.z = a;
@@ -440,7 +456,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         scene.add(gear);
 
         // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
-        // Exclusively Green & Black: Emerald (#0B3D2E), Sage (#2E5748), Charcoal (#1F1F1F), Dark Steel (#1C2320)
+        // Lighter green with black so each gate architecture and animation is strongly visible
         const roleZ = [-46, -51.5, -57, -62.5, -68];
         const roleNames = ["CEO", "CFO", "CMO", "COO", "CTO"];
         
@@ -448,22 +464,22 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const roleGroup = new THREE.Group();
           roleGroup.position.z = roleZ[r];
 
-          // Dedicated overhead spotlight for each C-suite gate in emerald/sage
-          const roleSpot = new THREE.PointLight(r % 2 === 0 ? "#0b3d2e" : "#2e5748", 48, 18, 2);
+          // Dedicated overhead spotlight for each C-suite gate in luminous green
+          const roleSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 55, 18, 2);
           roleSpot.position.set(0, 5.5, roleZ[r] + 1);
           scene.add(roleSpot);
 
           // Horizontal architectural floor support beam
           const beamGeom = keep(new THREE.BoxGeometry(14, .32, .45));
-          const beam = new THREE.Mesh(beamGeom, darkSteel);
+          const beam = new THREE.Mesh(beamGeom, deepBlack);
           beam.position.set(0, -6.5, 0);
           roleGroup.add(beam);
 
           // Heavy vertical portal pillars
           const pillarGeom = keep(new THREE.BoxGeometry(.45, 13, .55));
-          const leftPillar = new THREE.Mesh(pillarGeom, emerald);
+          const leftPillar = new THREE.Mesh(pillarGeom, gateMint);
           leftPillar.position.set(-6.8, 0, 0);
-          const rightPillar = new THREE.Mesh(pillarGeom, emerald);
+          const rightPillar = new THREE.Mesh(pillarGeom, gateMint);
           rightPillar.position.set(6.8, 0, 0);
           roleGroup.add(leftPillar, rightPillar);
 
@@ -471,20 +487,20 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             // CEO: Royal Crest diamond gate
             const diamondGeom = keep(new THREE.TorusGeometry(5.8, .28, 4, 4));
             diamondGeom.rotateZ(Math.PI / 4);
-            const diamond = new THREE.Mesh(diamondGeom, sage);
-            const innerRing = ring(4.5, .08, darkSteel, -.12, 64);
+            const diamond = new THREE.Mesh(diamondGeom, gateLuminous);
+            const innerRing = ring(4.5, .08, deepBlack, -.12, 64);
             roleGroup.add(diamond, innerRing);
           } else if (r === 1) {
             // CFO: Hexagonal Valuation Vault gate
             const hexGeom = keep(new THREE.TorusGeometry(5.6, .3, 6, 6));
-            const hex = new THREE.Mesh(hexGeom, emerald);
-            const innerTicker = ring(4.5, .09, sage, -.12, 64);
+            const hex = new THREE.Mesh(hexGeom, gateMint);
+            const innerTicker = ring(4.5, .09, gateLuminous, -.12, 64);
             roleGroup.add(hex, innerTicker);
           } else if (r === 2) {
             // CMO: Waveform Broadcast aperture
-            const waveRing = ring(5.6, .26, darkSteel, 0, 72);
+            const waveRing = ring(5.6, .26, deepBlack, 0, 72);
             for (let b = 0; b < 8; b++) {
-              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.22, 2.6, .12)), sage);
+              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.22, 2.6, .12)), gateLuminous);
               const angle = (b / 8) * Math.PI * 2;
               fin.position.set(Math.cos(angle) * 5.4, Math.sin(angle) * 5.4, -.06);
               fin.rotation.z = angle;
@@ -493,9 +509,9 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             roleGroup.add(waveRing);
           } else if (r === 3) {
             // COO: Clockwork Meshed Gear Train gate
-            const gearRing = ring(5.5, .32, charcoal, 0, 72);
+            const gearRing = ring(5.5, .32, deepBlack, 0, 72);
             for (let g = 0; g < 24; g++) {
-              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.5, .25, .35)), emerald);
+              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.5, .25, .35)), gateLuminous);
               const angle = (g / 24) * Math.PI * 2;
               cog.position.set(Math.cos(angle) * 5.6, Math.sin(angle) * 5.6, 0);
               cog.rotation.z = angle;
@@ -505,9 +521,9 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           } else {
             // CTO: Octagonal Tech Grid Matrix
             const octGeom = keep(new THREE.TorusGeometry(5.6, .28, 8, 8));
-            const oct = new THREE.Mesh(octGeom, emerald);
-            const coreSpokeX = new THREE.Mesh(keep(new THREE.BoxGeometry(10.5, .14, .14)), sage);
-            const coreSpokeY = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 10.5, .14)), sage);
+            const oct = new THREE.Mesh(octGeom, gateMint);
+            const coreSpokeX = new THREE.Mesh(keep(new THREE.BoxGeometry(10.5, .14, .14)), gateLuminous);
+            const coreSpokeY = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 10.5, .14)), gateLuminous);
             roleGroup.add(oct, coreSpokeX, coreSpokeY);
           }
 
@@ -588,7 +604,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         scene.add(ringTrio);
 
         // --- SCENE 6: FINALE MECHANICAL IRIS & CALM CHAMBER (Z = -142 to -164) ---
-        finaleIris = createMechanicalAperture(scene, -142, 8.5, sage, darkSteel, keep);
+        finaleIris = createMechanicalAperture(scene, -142, 8.5, gateMint, darkSteel, keep);
 
         const endWall = new THREE.Mesh(keep(new THREE.PlaneGeometry(48, 38)), darkBackdrop);
         endWall.position.z = -164.5; scene.add(endWall);
