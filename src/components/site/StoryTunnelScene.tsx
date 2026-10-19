@@ -212,7 +212,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     let scene: THREE.Scene | null = null;
     let camera: THREE.PerspectiveCamera | null = null;
     let gear: THREE.Group | null = null;
-    let gearInnerCollar: THREE.Group | null = null;
     let dayOne: THREE.Group | null = null;
     let dayTwo: THREE.Group | null = null;
     let ringTrio: THREE.Group | null = null;
@@ -398,92 +397,39 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           // Procedural bulkhead iris remains active
         }
 
-        // --- SCENE 2: HEAVY INDUSTRIAL DRIVE SPROCKET & FLYWHEEL RING (Z = -6.6) ---
+        // --- SCENE 2: GEAR GATE (Z = -6.6) ---
         gear = new THREE.Group(); gear.position.z = -6.6;
-
-        // 1. Heavy Outer Sprocket Wheel (Flywheel rim with massive drive sprocket teeth)
-        // Outer radius ~10.8 with large drive teeth extending to ~11.8
-        const sprocketRimOuter = ring(10.8, .42, darkSteel, 0, 80);
-        const sprocketRimBezel = ring(11.2, .14, copperGlow, .08, 80);
-        const sprocketInnerTrack = ring(9.4, .25, copper, -.06, 80);
-        keep(sprocketRimOuter.geometry); keep(sprocketRimBezel.geometry); keep(sprocketInnerTrack.geometry);
-        gear.add(sprocketRimOuter, sprocketRimBezel, sprocketInnerTrack);
-
-        // 32 Chunky Industrial Sprocket Teeth with tapered drive profile
-        const sprocketToothGeom = keep(new THREE.BoxGeometry(0.72, 1.25, 0.75));
-        const sprocketTeeth = new THREE.InstancedMesh(sprocketToothGeom, copperGlow, 32);
-        const toothObj = new THREE.Object3D();
-        for (let i = 0; i < 32; i++) {
-          const a = (i / 32) * Math.PI * 2;
-          toothObj.position.set(Math.cos(a) * 11.2, Math.sin(a) * 11.2, 0);
-          toothObj.rotation.set(0, 0, a);
-          toothObj.updateMatrix();
-          sprocketTeeth.setMatrixAt(i, toothObj.matrix);
+        const gateRings = [
+          ring(10.6, .32, darkSteel, 0),
+          ring(9.9, .15, copperGlow, -.18),
+          ring(7.6, .22, metal, -.38),
+          ring(5.4, .16, emerald, -.56),
+          ring(3.4, .09, copperGlow, -.82),
+        ];
+        gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
+        
+        // Prominent, heavy mechanical teeth with high-contrast copper material
+        const toothGeometry = keep(new THREE.BoxGeometry(1.2, .48, .85));
+        const teeth = new THREE.InstancedMesh(toothGeometry, copperGlow, 36);
+        const tooth = new THREE.Object3D();
+        for (let i = 0; i < 36; i++) {
+          const a = (i / 36) * Math.PI * 2;
+          tooth.position.set(Math.cos(a) * 10.7, Math.sin(a) * 10.7, 0);
+          tooth.rotation.set(0, 0, a);
+          tooth.updateMatrix();
+          teeth.setMatrixAt(i, tooth.matrix);
         }
-        sprocketTeeth.instanceMatrix.needsUpdate = true;
-        gear.add(sprocketTeeth);
+        teeth.instanceMatrix.needsUpdate = true; gear.add(teeth);
 
-        // Heavy Chain-Roller Bushings between teeth (industrial chain drive aesthetics)
-        const rollerGeom = keep(new THREE.CylinderGeometry(0.22, 0.22, 0.65, 12));
-        const rollerMesh = new THREE.InstancedMesh(rollerGeom, darkSteel, 32);
-        const rollerObj = new THREE.Object3D();
-        for (let i = 0; i < 32; i++) {
-          const a = ((i + 0.5) / 32) * Math.PI * 2;
-          rollerObj.position.set(Math.cos(a) * 10.65, Math.sin(a) * 10.65, 0);
-          rollerObj.rotation.set(Math.PI / 2, 0, a);
-          rollerObj.updateMatrix();
-          rollerMesh.setMatrixAt(i, rollerObj.matrix);
+        // Heavy counter-rotating inner planetary spoke hub
+        const spokeGeometry = keep(new THREE.BoxGeometry(4.2, .18, .28));
+        for (let i = 0; i < 8; i++) {
+          const spoke = new THREE.Mesh(spokeGeometry, copper);
+          const a = (i / 8) * Math.PI * 2;
+          spoke.position.set(Math.cos(a) * 4.1, Math.sin(a) * 4.1, -.28);
+          spoke.rotation.z = a;
+          gear.add(spoke);
         }
-        rollerMesh.instanceMatrix.needsUpdate = true;
-        gear.add(rollerMesh);
-
-        // 2. High-Inertia Web Plate with 12 Circular Weight-Reduction Lightening Holes
-        const webPlateRim = ring(8.2, .22, emerald, -.12, 64);
-        keep(webPlateRim.geometry);
-        gear.add(webPlateRim);
-
-        const holeBezelGeom = keep(new THREE.TorusGeometry(0.75, 0.08, 12, 28));
-        const numHoles = 12;
-        for (let h = 0; h < numHoles; h++) {
-          const a = (h / numHoles) * Math.PI * 2;
-          const holeBezel = new THREE.Mesh(holeBezelGeom, copper);
-          holeBezel.position.set(Math.cos(a) * 8.4, Math.sin(a) * 8.4, -0.04);
-          gear.add(holeBezel);
-        }
-
-        // 3. Heavy Forged Radial Web Spokes (8 massive industrial structural ribs)
-        const spokeGeom = keep(new THREE.BoxGeometry(0.55, 3.8, 0.35));
-        for (let s = 0; s < 8; s++) {
-          const a = (s / 8) * Math.PI * 2;
-          const spokeMesh = new THREE.Mesh(spokeGeom, s % 2 === 0 ? copper : darkSteel);
-          spokeMesh.position.set(Math.cos(a) * 6.6, Math.sin(a) * 6.6, -0.1);
-          spokeMesh.rotation.z = a + Math.PI / 2;
-          gear.add(spokeMesh);
-        }
-
-        // 4. Central Counter-Rotating Flywheel Collar & Camera Portal Rim (Clear open bore R > 3.6)
-        gearInnerCollar = new THREE.Group();
-        gearInnerCollar.position.z = -6.6;
-        const hubRingOuter = ring(4.8, .28, darkSteel, 0, 64);
-        const hubRingBezel = ring(4.3, .16, copperGlow, -.15, 64);
-        const hubRingBore = ring(3.6, .12, copper, -.26, 64);
-        keep(hubRingOuter.geometry); keep(hubRingBezel.geometry); keep(hubRingBore.geometry);
-        gearInnerCollar.add(hubRingOuter, hubRingBezel, hubRingBore);
-
-        // Heavy Hub Bolting Pattern (16 industrial hex bolts securing flywheel hub)
-        const boltGeom = keep(new THREE.CylinderGeometry(0.14, 0.14, 0.35, 6));
-        const boltMesh = new THREE.InstancedMesh(boltGeom, copperGlow, 16);
-        const boltObj = new THREE.Object3D();
-        for (let b = 0; b < 16; b++) {
-          const a = (b / 16) * Math.PI * 2;
-          boltObj.position.set(Math.cos(a) * 4.55, Math.sin(a) * 4.55, -0.05);
-          boltObj.rotation.set(Math.PI / 2, 0, 0);
-          boltObj.updateMatrix();
-          boltMesh.setMatrixAt(b, boltObj.matrix);
-        }
-        boltMesh.instanceMatrix.needsUpdate = true;
-        gearInnerCollar.add(boltMesh);
-        scene.add(gearInnerCollar);
         scene.add(gear);
 
         // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
@@ -734,14 +680,8 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
               camera!.rotation.z = bankAngle;
             }
 
-            // Heavy Industrial Drive Sprocket & Flywheel Ring Rotation:
-            // High-inertia continuous rotation + dynamic scroll acceleration
-            if (gear) {
-              gear.rotation.z = reduced ? 0 : (t * 0.45) + (p * Math.PI * 10.0);
-            }
-            if (gearInnerCollar) {
-              gearInnerCollar.rotation.z = reduced ? 0 : -(t * 0.25) - (p * Math.PI * 4.5);
-            }
+            // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
+            gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
             dayOne!.rotation.z = reduced ? 0 : smooth(.52, .65, p) * .035;
             dayTwo!.rotation.z = reduced ? 0 : -smooth(.62, .76, p) * .045;
             ringTrio!.rotation.z = reduced ? 0 : smooth(.68, .84, p) * .035;
