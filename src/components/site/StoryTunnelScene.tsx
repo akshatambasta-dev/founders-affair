@@ -257,10 +257,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         if (floorMap) floorMap.repeat.set(2, 8);
 
         // --- HIGH-CONTRAST PALETTE FOR 3D ENVIRONMENT ---
-        // --- HIGH-CONTRAST PALETTE FOR 3D ENVIRONMENT ---
-        // Blue: Deep Teal (#105666), Luminous Cyan/Teal Glow (#2094af)
-        // Green: Rich Forest Emerald (#0d4a36), Vibrant Pine Glow (#156b4f / #1aa072)
-        // Set against deep Obsidian Black (#0A0A0A) & Charcoal (#18201c)
+        // --- PURE GREEN & BLACK PALETTE FOR 3D ENVIRONMENT ---
+        // Dark Green: Deep Emerald (#0b3d2e), Deep Forest Patina (#08241b)
+        // Accent Green: Luminous Pine Emerald (#1aa072 / #116345)
+        // Set against deep Obsidian Black (#0A0A0A) & Charcoal (#141816)
         const darkSteel = keep(new THREE.MeshStandardMaterial({
           color: "#18201c", map: metalMap, metalness: .88, roughness: .42,
         }));
@@ -271,30 +271,30 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           color: "#0a0a0a", metalness: .9, roughness: .6,
         }));
         const emerald = keep(new THREE.MeshStandardMaterial({
-          color: "#0d4a36", metalness: .72, roughness: .3,
-          emissive: "#093828", emissiveIntensity: .85,
+          color: "#0b3d2e", metalness: .78, roughness: .35,
+          emissive: "#051f17", emissiveIntensity: .85,
         }));
         const emeraldGlow = keep(new THREE.MeshStandardMaterial({
           color: "#1aa072", metalness: .35, roughness: .2,
           emissive: "#116345", emissiveIntensity: 1.5,
         }));
         const sage = keep(new THREE.MeshStandardMaterial({
-          color: "#105666", metalness: .65, roughness: .32,
-          emissive: "#093844", emissiveIntensity: .65,
+          color: "#08241b", metalness: .75, roughness: .38,
+          emissive: "#04140f", emissiveIntensity: .65,
         }));
         const metal = keep(new THREE.MeshStandardMaterial({
-          color: "#105666", map: metalMap, metalness: .85, roughness: .28,
+          color: "#0b3d2e", map: metalMap, metalness: .85, roughness: .28,
         }));
         const floorMaterial = keep(new THREE.MeshStandardMaterial({
-          color: "#070f0c", map: floorMap, metalness: .75, roughness: .3, side: THREE.DoubleSide,
+          color: "#060e0a", map: floorMap, metalness: .75, roughness: .3, side: THREE.DoubleSide,
         }));
-        const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#105666" }));
+        const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#0b3d2e" }));
         const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#040705", side: THREE.DoubleSide }));
 
-        // --- ATMOSPHERIC TEAL & FOREST EMERALD LIGHTING ---
-        scene.add(new THREE.HemisphereLight(0x1aa072, 0x040705, 1.6));
+        // --- ATMOSPHERIC DARK EMERALD & PINE LIGHTING ---
+        scene.add(new THREE.HemisphereLight(0x1aa072, 0x040705, 1.55));
 
-        const key = new THREE.DirectionalLight(0x2094af, 2.4);
+        const key = new THREE.DirectionalLight(0x0b3d2e, 2.4);
         key.position.set(-8, 10, 12); scene.add(key);
 
         const edge = new THREE.DirectionalLight(0x1aa072, 2.8);
@@ -308,14 +308,14 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const light = new THREE.PointLight(color, power, distance, 2);
           light.position.set(...pos); scene.add(light);
         };
-        addLight("#105666", 110, 36, [0, 1.6, -5]);
+        addLight("#0b3d2e", 110, 36, [0, 1.6, -5]);
         addLight("#1aa072", 95, 42, [-5, 4, -30]);
-        addLight("#105666", 85, 36, [0, 0, -52]);
+        addLight("#0b3d2e", 85, 36, [0, 0, -52]);
         addLight("#1aa072", 92, 38, [0, 2, -64]);
-        addLight("#105666", 80, 32, [0, 0, -74]);
-        addLight("#2094af", 95, 40, [0, 3, -94]);
-        addLight("#1aa072", 100, 40, [-7, 0, -118]);
-        addLight("#105666", 105, 50, [0, 2.5, -148]);
+        addLight("#0b3d2e", 80, 32, [0, 0, -74]);
+        addLight("#1aa072", 95, 40, [0, 3, -94]);
+        addLight("#0b3d2e", 100, 40, [-7, 0, -118]);
+        addLight("#0b3d2e", 105, 50, [0, 2.5, -148]);
         addLight("#1aa072", 75, 32, [0, 0, -159]);
 
         // --- CONTINUOUS TUNNEL SHELL ---
@@ -600,7 +600,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         ].forEach((part) => { keep(part.geometry); endPortal!.add(part); });
         scene.add(endPortal);
         const endGlowMat = keep(new THREE.MeshBasicMaterial({
-          color: "#105666", transparent: true, opacity: .18, side: THREE.DoubleSide,
+          color: "#0b3d2e", transparent: true, opacity: .18, side: THREE.DoubleSide,
         }));
         endGlow = new THREE.Mesh(keep(new THREE.CircleGeometry(5.82, 96)), endGlowMat);
         endGlow.position.z = -160.55; scene.add(endGlow);
