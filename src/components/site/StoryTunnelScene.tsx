@@ -480,6 +480,11 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           return group;
         };
 
+        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
+        // Lighter green with black so each gate architecture and animation is strongly visible
+        const roleZ = [-46, -51.5, -57, -62.5, -68] as const;
+        const roleNames = ["CEO", "CFO", "CMO", "COO", "CTO"] as const;
+
         // 4 cardinal glints stationed around the Gear Gate rim (top, bottom, left, right)
         const gearGlints: THREE.Group[] = [];
         const gearGlintAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
@@ -494,23 +499,19 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const roleGlints: THREE.Group[] = [];
         for (let r = 0; r < 5; r++) {
           const glint = createStarGlint(0.72);
-          glint.position.set(0, 5.8, roleZ[r]);
+          glint.position.set(0, 5.8, roleZ[r] ?? -50);
           scene!.add(glint);
           roleGlints.push(glint);
         }
 
-        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
-        // Lighter green with black so each gate architecture and animation is strongly visible
-        const roleZ = [-46, -51.5, -57, -62.5, -68];
-        const roleNames = ["CEO", "CFO", "CMO", "COO", "CTO"];
-        
         for (let r = 0; r < 5; r++) {
+          const rz = roleZ[r] ?? -50;
           const roleGroup = new THREE.Group();
-          roleGroup.position.z = roleZ[r];
+          roleGroup.position.z = rz;
 
           // Dedicated overhead spotlight for each C-suite gate in luminous green
           const roleSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 55, 18, 2);
-          roleSpot.position.set(0, 5.5, roleZ[r] + 1);
+          roleSpot.position.set(0, 5.5, rz + 1);
           scene.add(roleSpot);
 
           // Horizontal architectural floor support beam
@@ -772,8 +773,11 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             // Animate Dynamic Financial Candlestick Pulses (Stock Market fluctuation)
             if (!reduced && stockBars.length > 0) {
               for (let s = 0; s < stockBars.length; s++) {
-                const pulse = 1 + Math.sin(t * 2.4 + s * 1.1) * 0.12;
-                stockBars[s].scale.y = pulse * (2 + (s % 4));
+                const bar = stockBars[s];
+                if (bar) {
+                  const pulse = 1 + Math.sin(t * 2.4 + s * 1.1) * 0.12;
+                  bar.scale.y = pulse * (2 + (s % 4));
+                }
               }
             }
 
@@ -792,7 +796,8 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
               });
 
               roleGlints.forEach((glint, rIdx) => {
-                const dist = Math.abs(camZ - roleZ[rIdx]);
+                const targetZ = roleZ[rIdx] ?? -50;
+                const dist = Math.abs(camZ - targetZ);
                 const prox = Math.max(0, 1 - dist / 18);
                 const flare = prox * (0.4 + Math.sin(t * 3.2 + rIdx * 1.4) * 0.5);
                 glint.scale.set(flare, flare, 1);
