@@ -117,52 +117,39 @@ function makeHudTexture(header: string, title: string, detail: string) {
   c.height = 256;
   const ctx = c.getContext("2d");
   if (!ctx) return null;
-  ctx.fillStyle = "rgba(8, 14, 11, 0.94)";
+
+  // Dark brushed executive bronze slate
+  ctx.fillStyle = "rgba(22, 20, 18, 0.96)";
   ctx.fillRect(0, 0, 512, 256);
 
-  // Border & corner brackets in mint green
-  ctx.strokeStyle = "rgba(61, 184, 143, 0.65)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(6, 6, 500, 244);
+  // Warm champagne brass border & bevel
+  ctx.strokeStyle = "rgba(212, 155, 99, 0.75)";
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(8, 8, 496, 240);
 
-  ctx.strokeStyle = "#52d6a4";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  // Top left
-  ctx.moveTo(6, 32); ctx.lineTo(6, 6); ctx.lineTo(32, 6);
-  // Top right
-  ctx.moveTo(480, 6); ctx.lineTo(506, 6); ctx.lineTo(506, 32);
-  // Bottom left
-  ctx.moveTo(6, 224); ctx.lineTo(6, 250); ctx.lineTo(32, 250);
-  // Bottom right
-  ctx.moveTo(480, 250); ctx.lineTo(506, 250); ctx.lineTo(506, 224);
-  ctx.stroke();
+  ctx.strokeStyle = "rgba(184, 115, 74, 0.4)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(14, 14, 484, 228);
 
-  // Header tag
-  ctx.fillStyle = "#52d6a4";
-  ctx.font = "bold 16px monospace";
-  ctx.fillText(header, 24, 44);
+  // Header tag in warm copper
+  ctx.fillStyle = "#d49b63";
+  ctx.font = "bold 15px 'Courier New', monospace";
+  ctx.fillText(header, 28, 48);
 
-  // Main title
+  // Main title in letterpress warm ivory
   ctx.fillStyle = "#f7f4d5";
-  ctx.font = "bold 26px monospace";
-  ctx.fillText(title, 24, 105);
+  ctx.font = "bold 23px 'Times New Roman', serif";
+  ctx.fillText(title, 28, 106);
 
-  // Detail / telemetry
-  ctx.fillStyle = "rgba(247, 244, 213, 0.82)";
-  ctx.font = "16px monospace";
-  ctx.fillText(detail, 24, 160);
+  // Detail / editorial notes
+  ctx.fillStyle = "rgba(237, 231, 217, 0.88)";
+  ctx.font = "15px 'Courier New', monospace";
+  ctx.fillText(detail, 28, 160);
 
-  // Subtext / status
-  ctx.fillStyle = "#3db88f";
-  ctx.font = "14px monospace";
-  ctx.fillText("STATUS: CAUSAL LOOP VERIFIED // NODE: OK", 24, 215);
-
-  // Scanlines
-  ctx.fillStyle = "rgba(82, 214, 164, 0.08)";
-  for (let y = 10; y < 246; y += 6) {
-    ctx.fillRect(10, y, 492, 1);
-  }
+  // Subtext / executive status in brushed bronze
+  ctx.fillStyle = "#b8734a";
+  ctx.font = "13px 'Courier New', monospace";
+  ctx.fillText("EXECUTIVE MANDATE // FOUNDERS' AFFAIR 2026", 28, 212);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -312,10 +299,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     const roleGates: THREE.Group[] = [];
     const stockBars: THREE.Mesh[] = [];
     let boardroomGroup: THREE.Group | null = null;
-    const laserScanners: THREE.Group[] = [];
-    const hudPanels: THREE.Mesh[] = [];
-    const floatingAssets: THREE.Mesh[] = [];
-    const simulatedCheques: THREE.Mesh[] = [];
     const gearGlints: THREE.Group[] = [];
 
     const resources = new Set<{ dispose?: () => void }>();
@@ -418,16 +401,16 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           color: "#f0f4f7", metalness: 0.98, roughness: 0.12,
         }));
 
-        // --- ATMOSPHERIC DARK EMERALD & PINE LIGHTING ---
-        scene.add(new THREE.HemisphereLight(0x1aa072, 0x040705, 1.55));
+        // --- ATMOSPHERIC WARM EXECUTIVE ARCHITECTURAL LIGHTING ---
+        scene.add(new THREE.HemisphereLight(0xfff6ea, 0x141615, 1.45));
 
-        const key = new THREE.DirectionalLight(0x0b3d2e, 2.4);
+        const key = new THREE.DirectionalLight(0xffeedb, 2.2);
         key.position.set(-8, 10, 12); scene.add(key);
 
-        const edge = new THREE.DirectionalLight(0x1aa072, 2.8);
+        const edge = new THREE.DirectionalLight(0xd49b63, 1.8);
         edge.position.set(8, -2, -20); scene.add(edge);
 
-        openingWarmLight = new THREE.PointLight("#1aa072", 140, 48, 2);
+        openingWarmLight = new THREE.PointLight("#fff5ea", 140, 48, 2);
         openingWarmLight.position.set(0, 0, 24);
         scene.add(openingWarmLight);
 
@@ -435,15 +418,15 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const light = new THREE.PointLight(color, power, distance, 2);
           light.position.set(...pos); scene?.add(light);
         };
-        addLight("#0b3d2e", 110, 36, [0, 1.6, -5]);
-        addLight("#1aa072", 95, 42, [-5, 4, -30]);
-        addLight("#0b3d2e", 60, 28, [0, 0, -36]);
-        addLight("#1aa072", 60, 28, [0, 2, -72]);
-        addLight("#0b3d2e", 80, 32, [0, 0, -78]);
-        addLight("#1aa072", 95, 40, [0, 3, -94]);
-        addLight("#0b3d2e", 100, 40, [-7, 0, -118]);
-        addLight("#0b3d2e", 105, 50, [0, 2.5, -148]);
-        addLight("#1aa072", 75, 32, [0, 0, -159]);
+        addLight("#fff6ea", 95, 36, [0, 2.5, -5]);
+        addLight("#ffdcb0", 90, 36, [-5, 3.5, -25]);
+        addLight("#fff4e0", 85, 32, [0, 2.5, -36]);
+        addLight("#fff4e0", 85, 32, [0, 2.5, -72]);
+        addLight("#ffdcb0", 90, 36, [0, 2.5, -88]);
+        addLight("#fff6ea", 95, 38, [0, 2.5, -106]);
+        addLight("#ffdcb0", 90, 38, [-5, 2.5, -125]);
+        addLight("#fff6ea", 95, 42, [0, 2.5, -148]);
+        addLight("#ffdcb0", 80, 32, [0, 2, -159]);
 
         // --- CONTINUOUS TUNNEL SHELL ---
         const shellGeometry = keep(new THREE.CylinderGeometry(12.7, 12.7, 138, 64, 1, true));
@@ -601,43 +584,25 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           gearGlints.push(glint);
         });
 
-        // --- SCENE 3: SIMULATION INITIALIZATION CORRIDOR (Z = -12 to -38) ---
-        // Establishes the corporate simulation engine right after title reveal:
-        // $100,000 telemetry HUD plaques, glowing laser scanner discs, and circuit traces
-        const scanPositions = [-16, -24, -32];
-        scanPositions.forEach((posZ, idx) => {
-          const scanGroup = new THREE.Group();
-          scanGroup.position.z = posZ;
-          const scanRing = ring(11.2, 0.08, gateLuminous, 0, 72);
-          const scanDiscMat = keep(new THREE.MeshBasicMaterial({
-            color: idx % 2 === 0 ? "#52d6a4" : "#3db88f",
-            transparent: true, opacity: 0.08, side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending, depthWrite: false,
-          }));
-          const scanDisc = new THREE.Mesh(keep(new THREE.CircleGeometry(11.0, 48)), scanDiscMat);
-          scanGroup.add(scanRing, scanDisc);
-          scene!.add(scanGroup);
-          laserScanners.push(scanGroup);
-        });
-
-        // 3 Simulation Telemetry HUD Plaques along the corridor walls
+        // --- SCENE 3: ATRIUM GALLERY (Z = -14 to -36) ---
+        // Flush architectural bronze wall plaques set into dark slat walls with warm sconces
         const hudGeom = keep(new THREE.PlaneGeometry(6.4, 3.2));
         const hudData = [
           {
-            pos: [-6.8, 1.2, -18] as [number, number, number], rotY: 0.35,
-            header: "[ SIMULATION PROTOCOL // INITIALIZED ]",
+            pos: [-9.2, 1.2, -18] as [number, number, number], rotY: Math.PI / 2,
+            header: "SIMULATION PROTOCOL // INITIALIZED",
             title: "STARTING CAPITAL: $100,000.00",
             detail: "5 SEATS // 1 VENTURE // TWO DAYS TO BUILD & RUN",
           },
           {
-            pos: [6.8, -0.6, -26] as [number, number, number], rotY: -0.35,
-            header: "[ EXECUTIVE MANDATE // TWO DAYS ]",
+            pos: [9.2, 0.4, -26] as [number, number, number], rotY: -Math.PI / 2,
+            header: "EXECUTIVE MANDATE // TWO DAYS",
             title: "DAY 01: BUILD & MOVE // DAY 02: FUND",
             detail: "ACQUISITION · CRISIS · STOCK MARKET · BRAND WAR",
           },
           {
-            pos: [-6.5, 0.4, -34] as [number, number, number], rotY: 0.3,
-            header: "[ CAUSAL MARKET FEED: LIVE ]",
+            pos: [-9.2, 0.8, -34] as [number, number, number], rotY: Math.PI / 2,
+            header: "CAUSAL MARKET FEED // LIVE",
             title: "DECISION CONSEQUENCE LOOP: ACTIVE",
             detail: "APPROACHING THE EXECUTIVE BOARDROOM ROTUNDA",
           },
@@ -646,14 +611,18 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         hudData.forEach((item) => {
           const tex = keep(makeHudTexture(item.header, item.title, item.detail));
           if (tex) {
-            const mat = keep(new THREE.MeshBasicMaterial({
-              map: tex, transparent: true, opacity: 0.95, side: THREE.DoubleSide,
+            const mat = keep(new THREE.MeshStandardMaterial({
+              map: tex, metalness: 0.35, roughness: 0.45,
             }));
             const plaque = new THREE.Mesh(hudGeom, mat);
             plaque.position.set(...item.pos);
             plaque.rotation.y = item.rotY;
             scene!.add(plaque);
-            hudPanels.push(plaque);
+
+            // Warm architectural sconce light directly above the plaque
+            const sconce = new THREE.PointLight("#fff5ea", 65, 8, 1.8);
+            sconce.position.set(item.pos[0] * 0.85, item.pos[1] + 1.8, item.pos[2]);
+            scene!.add(sconce);
           }
         });
 
@@ -925,89 +894,124 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
         scene.add(boardroomGroup);
 
-        // --- SCENE 4b: DAY 01 — MARKET CRUCIBLE (Z = -74 to -92) ---
-        // Acquisition Auction Stage, Boardroom Crisis Hub & Stock Market Candlestick Canyon
+        // --- SCENE 4b: DAY 01 — DEAL & TRADING CONCOURSE (Z = -74 to -92) ---
+        // Grounded executive trading desks in American walnut and dark bronze (zero floating tables or cubes)
         dayOne = new THREE.Group(); dayOne.position.z = -74;
 
-        // Elevated Octagonal Acquisition Stage
-        const octStageGeom = keep(new THREE.CylinderGeometry(4.2, 4.6, 0.5, 8));
-        const octStage = new THREE.Mesh(octStageGeom, deepBlack);
-        const stageCopperEdge = ring(4.4, 0.12, copperMat, 0.25, 8);
-        stageCopperEdge.rotation.x = Math.PI / 2;
-        octStage.add(stageCopperEdge);
-        octStage.position.y = -6.2;
-        dayOne.add(octStage);
+        // Grounded Trading Desks stationed on left and right sides
+        const tradingDeskGeom = keep(new THREE.BoxGeometry(4.2, 0.22, 1.6));
+        const tradingDeskBaseGeom = keep(new THREE.BoxGeometry(4.0, 1.6, 1.4));
+        const tradingBlotterGeom = keep(new THREE.PlaneGeometry(1.4, 0.8));
+        tradingBlotterGeom.rotateX(-Math.PI / 2);
+        const tradingTerminalGeom = keep(new THREE.BoxGeometry(0.85, 0.04, 0.55));
 
-        // Auction Gavel Pedestal
-        const gavelPedestal = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.4, 0.55, 1.4, 16)), darkSteel);
-        gavelPedestal.position.set(0, -5.3, 0);
-        const gavelHead = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 12)), copperMat);
-        gavelHead.rotation.z = Math.PI / 2;
-        gavelHead.position.y = 0.75;
-        gavelPedestal.add(gavelHead);
-        dayOne.add(gavelPedestal);
+        const deskPositions = [
+          { x: -6.5, z: -4 },
+          { x: 6.5, z: -4 },
+          { x: -6.5, z: 4 },
+          { x: 6.5, z: 4 },
+        ];
 
-        // 3 Floating Acquisition Asset Blocks rotating above magnetic rings
-        const assetCubeGeom = keep(new THREE.BoxGeometry(0.8, 0.8, 0.8));
-        for (let a = 0; a < 3; a++) {
-          const assetMat = a % 2 === 0 ? gateLuminous : gateMint;
-          const assetMesh = new THREE.Mesh(assetCubeGeom, assetMat);
-          const aAngle = (a / 3) * Math.PI * 2;
-          assetMesh.position.set(Math.cos(aAngle) * 2.6, -4.8, Math.sin(aAngle) * 2.6);
-          dayOne.add(assetMesh);
-          floatingAssets.push(assetMesh);
-        }
+        deskPositions.forEach((dp) => {
+          const dGroup = new THREE.Group();
+          dGroup.position.set(dp.x, -2.4, dp.z);
+
+          const dTop = new THREE.Mesh(tradingDeskGeom, walnutWood);
+          const dBase = new THREE.Mesh(tradingDeskBaseGeom, darkSteel);
+          dBase.position.y = -0.9;
+
+          // Warm copper/brass edge trim
+          const dTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.26, 0.05, 1.66)), copperMat);
+          dTrim.position.y = -0.09;
+          dTop.add(dTrim);
+
+          // Leather writing blotter
+          const blotterMat = keep(new THREE.MeshStandardMaterial({ color: "#1c1917", roughness: 0.55 }));
+          const blotter = new THREE.Mesh(tradingBlotterGeom, blotterMat);
+          blotter.position.set(0, 0.12, 0);
+          dTop.add(blotter);
+
+          // Flat executive tablet terminal
+          const terminalMat = keep(new THREE.MeshStandardMaterial({ color: "#18201d", metalness: 0.85, roughness: 0.2 }));
+          const terminal = new THREE.Mesh(tradingTerminalGeom, terminalMat);
+          terminal.position.set(0, 0.14, 0);
+          dTop.add(terminal);
+
+          dGroup.add(dTop, dBase);
+          dayOne!.add(dGroup);
+
+          // Warm ceiling downlight over trading desk
+          const deskDownlight = new THREE.PointLight("#fff5ea", 65, 8, 1.8);
+          deskDownlight.position.set(dp.x, 2.2, dp.z);
+          dayOne!.add(deskDownlight);
+        });
+
+        // Flush Architectural Wall Ticker Strips along sides
+        const tickerGeom = keep(new THREE.BoxGeometry(0.08, 0.45, 18));
+        const tickerMat = keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }));
+        const leftTicker = new THREE.Mesh(tickerGeom, tickerMat);
+        leftTicker.position.set(-9.2, 0.5, 0);
+        const rightTicker = new THREE.Mesh(tickerGeom, tickerMat);
+        rightTicker.position.set(9.2, 0.5, 0);
+        dayOne.add(leftTicker, rightTicker);
 
         scene.add(dayOne);
 
-        // --- SCENE 4c: DAY 02 — INVESTOR MARKETPLACE & BRAND WAR (Z = -98 to -115) ---
+        // --- SCENE 4c: DAY 02 — CAPITAL & INVESTOR PAVILION (Z = -98 to -115) ---
         dayTwo = new THREE.Group(); dayTwo.position.z = -105;
 
-        // Conclave Portal
-        const conclavePortal = ring(5.6, .22, gateMint, 0, 80);
+        // Architectural Portal Arch in dark bronze and copper
+        const conclavePortal = ring(5.6, .22, darkSteel, 0, 80);
         const innerConclaveRing = ring(5.0, .08, copperMat, -.15, 80);
         dayTwo.add(conclavePortal, innerConclaveRing);
 
-        // 4 Investor Exhibition Stalls with floating simulated cheque envelopes
-        const chequeGeom = keep(new THREE.BoxGeometry(1.4, 0.85, 0.08));
-        const chequeMat = keep(new THREE.MeshStandardMaterial({
-          color: "#f7f4d5", metalness: 0.2, roughness: 0.35,
-          emissive: "#3db88f", emissiveIntensity: 0.45,
+        // 4 Grounded Investor Partner Desks with physical leather document portfolios
+        const portfolioGeom = keep(new THREE.BoxGeometry(1.2, 0.06, 0.85));
+        const portfolioMat = keep(new THREE.MeshStandardMaterial({
+          color: "#5c361e", map: leatherMap, metalness: 0.1, roughness: 0.45,
         }));
-        const sealGeom = keep(new THREE.CylinderGeometry(0.18, 0.18, 0.1, 16));
+        const portfolioClaspGeom = keep(new THREE.BoxGeometry(0.18, 0.07, 0.08));
 
         for (let st = 0; st < 4; st++) {
           const stallGroup = new THREE.Group();
           const side = st % 2 === 0 ? -1 : 1;
           const zPos = st < 2 ? -4 : 4;
-          stallGroup.position.set(side * 6.5, -4.5, zPos);
+          stallGroup.position.set(side * 6.5, -2.4, zPos);
 
-          // Desk
-          const desk = new THREE.Mesh(keep(new THREE.BoxGeometry(2.4, 0.15, 1.2)), darkSteel);
-          const deskLegs = new THREE.Mesh(keep(new THREE.BoxGeometry(2.2, 1.6, 1.0)), deepBlack);
-          deskLegs.position.y = -0.8;
+          // American Walnut Desk with heavy architectural base
+          const desk = new THREE.Mesh(keep(new THREE.BoxGeometry(3.0, 0.22, 1.4)), walnutWood);
+          const deskTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(3.06, 0.05, 1.46)), copperMat);
+          deskTrim.position.y = -0.09;
+          desk.add(deskTrim);
+
+          const deskLegs = new THREE.Mesh(keep(new THREE.BoxGeometry(2.6, 1.6, 1.2)), darkSteel);
+          deskLegs.position.y = -0.9;
           stallGroup.add(desk, deskLegs);
 
-          // Floating Cheque Envelope
-          const cheque = new THREE.Mesh(chequeGeom, chequeMat);
-          cheque.position.set(0, 1.1, 0);
-          cheque.rotation.x = 0.2;
-          const seal = new THREE.Mesh(sealGeom, copperMat);
-          seal.rotation.x = Math.PI / 2;
-          seal.position.z = 0.05;
-          cheque.add(seal);
-          stallGroup.add(cheque);
-          simulatedCheques.push(cheque);
+          // Grounded Leather Document Portfolio resting flat on desk (zero floating envelopes)
+          const portfolio = new THREE.Mesh(portfolioGeom, portfolioMat);
+          portfolio.position.set(0, 0.14, 0);
+          portfolio.rotation.y = side * 0.12;
 
+          const clasp = new THREE.Mesh(portfolioClaspGeom, copperMat);
+          clasp.position.set(0, 0.035, 0.42);
+          portfolio.add(clasp);
+
+          stallGroup.add(portfolio);
           dayTwo.add(stallGroup);
+
+          // Warm architectural studio downlight on investor desk
+          const investorSpot = new THREE.PointLight("#fff5ea", 70, 9, 1.8);
+          investorSpot.position.set(side * 6.5, 2.2, zPos);
+          dayTwo.add(investorSpot);
         }
         scene.add(dayTwo);
 
         // --- SCENE 5: THREE-RING TRIPTYCH (BUILD / MOVE / FUND) (Z = -116) ---
         ringTrio = new THREE.Group(); ringTrio.position.z = -116;
         const triad = [
-          { x: -7.35, r: 3.5, material: sage },
-          { x: 0, r: 4.05, material: emerald },
+          { x: -7.35, r: 3.5, material: darkSteel },
+          { x: 0, r: 4.05, material: copperMat },
           { x: 7.35, r: 3.5, material: darkSteel },
         ];
         const triptychBeamGeom = keep(new THREE.BoxGeometry(20.5, .28, .36));
@@ -1155,29 +1159,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
               });
             }
 
-            // Animate Simulation Telemetry HUD & Laser Scanners
             if (!reduced) {
-              laserScanners.forEach((scanner, sIdx) => {
-                scanner.rotation.z = t * 0.45 * (sIdx % 2 === 0 ? 1 : -1);
-              });
-
-              hudPanels.forEach((panel, pIdx) => {
-                panel.position.y += Math.sin(t * 1.5 + pIdx * 1.2) * 0.002;
-              });
-
-              // Animate Floating Day 1 Acquisition Assets
-              floatingAssets.forEach((asset, aIdx) => {
-                asset.rotation.x = t * 0.8 + aIdx;
-                asset.rotation.y = t * 0.6 + aIdx;
-                asset.position.y = -4.8 + Math.sin(t * 2.5 + aIdx) * 0.15;
-              });
-
-              // Animate Floating Day 2 Simulated Cheques
-              simulatedCheques.forEach((cheque, cIdx) => {
-                cheque.position.y = 1.1 + Math.sin(t * 2.0 + cIdx * 1.5) * 0.08;
-                cheque.rotation.y = Math.sin(t * 1.2 + cIdx) * 0.15;
-              });
-
               // Animate 4-point specular star glints on Gear Gate
               gearGlints.forEach((glint, idx) => {
                 const toothPass = Math.sin((gear ? gear.rotation.z : 0) * 18 + idx * (Math.PI / 2));
