@@ -60,34 +60,34 @@ function makePattern(kind: "weave" | "metal" | "floor" | "wood" | "leather") {
       x.stroke();
     }
   } else if (kind === "wood") {
-    // Elegant dark executive walnut grain
-    x.fillStyle = "#121614";
+    // Rich architectural American walnut grain with warm amber/caramel undertones
+    x.fillStyle = "#4a2a16";
     x.fillRect(0, 0, 512, 512);
     for (let y = 0; y < 512; y += 2) {
-      const gAlpha = 0.08 + Math.sin(y * 0.032) * 0.04 + Math.sin(y * 0.11) * 0.02;
-      x.fillStyle = `rgba(184, 115, 74, ${Math.max(0, gAlpha)})`;
+      const gAlpha = 0.15 + Math.sin(y * 0.035) * 0.09 + Math.sin(y * 0.12) * 0.04;
+      x.fillStyle = `rgba(195, 120, 65, ${Math.max(0, gAlpha)})`;
       x.fillRect(0, y, 512, 2);
     }
-    for (let i = 0; i < 120; i++) {
-      x.strokeStyle = i % 2 === 0 ? "rgba(11, 61, 46, 0.22)" : "rgba(237, 231, 217, 0.05)";
-      x.lineWidth = 1;
+    for (let i = 0; i < 160; i++) {
+      x.strokeStyle = i % 2 === 0 ? "rgba(42, 22, 10, 0.45)" : "rgba(235, 175, 110, 0.2)";
+      x.lineWidth = i % 3 === 0 ? 1.5 : 0.8;
       x.beginPath();
-      const startY = (i * 23) % 512;
+      const startY = (i * 19) % 512;
       x.moveTo(0, startY);
-      for (let px = 0; px <= 512; px += 32) {
-        const wave = Math.sin(px * 0.015 + i) * 5;
+      for (let px = 0; px <= 512; px += 24) {
+        const wave = Math.sin(px * 0.018 + i) * 6;
         x.lineTo(px, startY + wave);
       }
       x.stroke();
     }
   } else if (kind === "leather") {
-    // High-end black executive chair leather with fine stipple grain
-    x.fillStyle = "#0c0f0d";
+    // Executive saddle cognac leather with fine natural grain and highlights
+    x.fillStyle = "#422514";
     x.fillRect(0, 0, 512, 512);
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 2000; i++) {
       const rx = (i * 97) % 512;
       const ry = (i * 157) % 512;
-      x.fillStyle = i % 2 === 0 ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.22)";
+      x.fillStyle = i % 2 === 0 ? "rgba(240, 190, 145, 0.14)" : "rgba(25, 12, 6, 0.38)";
       x.fillRect(rx, ry, 2, 2);
     }
   } else {
@@ -312,10 +312,8 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     const roleGates: THREE.Group[] = [];
     const stockBars: THREE.Mesh[] = [];
     let boardroomGroup: THREE.Group | null = null;
-    let holoBeacon: THREE.Mesh | null = null;
     const laserScanners: THREE.Group[] = [];
     const hudPanels: THREE.Mesh[] = [];
-    const chairCrests: THREE.Group[] = [];
     const floatingAssets: THREE.Mesh[] = [];
     const simulatedCheques: THREE.Mesh[] = [];
     const gearGlints: THREE.Group[] = [];
@@ -411,13 +409,13 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           emissive: "#4a2410", emissiveIntensity: .65,
         }));
         const walnutWood = keep(new THREE.MeshStandardMaterial({
-          color: "#221c17", map: woodMap, metalness: 0.15, roughness: 0.38,
+          color: "#8a522e", map: woodMap, metalness: 0.08, roughness: 0.28,
         }));
         const executiveLeather = keep(new THREE.MeshStandardMaterial({
-          color: "#0c0e0d", map: leatherMap, metalness: 0.22, roughness: 0.42,
+          color: "#744326", map: leatherMap, metalness: 0.1, roughness: 0.44,
         }));
         const chromeMetal = keep(new THREE.MeshStandardMaterial({
-          color: "#d8dad8", metalness: 0.95, roughness: 0.16,
+          color: "#f0f4f7", metalness: 0.98, roughness: 0.12,
         }));
 
         // --- ATMOSPHERIC DARK EMERALD & PINE LIGHTING ---
@@ -439,9 +437,9 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         };
         addLight("#0b3d2e", 110, 36, [0, 1.6, -5]);
         addLight("#1aa072", 95, 42, [-5, 4, -30]);
-        addLight("#0b3d2e", 85, 36, [0, 0, -52]);
-        addLight("#1aa072", 92, 38, [0, 2, -64]);
-        addLight("#0b3d2e", 80, 32, [0, 0, -74]);
+        addLight("#0b3d2e", 60, 28, [0, 0, -36]);
+        addLight("#1aa072", 60, 28, [0, 2, -72]);
+        addLight("#0b3d2e", 80, 32, [0, 0, -78]);
         addLight("#1aa072", 95, 40, [0, 3, -94]);
         addLight("#0b3d2e", 100, 40, [-7, 0, -118]);
         addLight("#0b3d2e", 105, 50, [0, 2.5, -148]);
@@ -665,41 +663,45 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         boardroomGroup = new THREE.Group();
         boardroomGroup.position.set(0, 0, -55);
 
-        // 1. Room Floor: Polished executive dark walnut / terrazzo
+        // 1. Room Floor: Polished executive dark oak / smoked terrazzo
         const roomFloorGeom = keep(new THREE.PlaneGeometry(24, 22));
         roomFloorGeom.rotateX(-Math.PI / 2);
         const roomFloorMat = keep(new THREE.MeshStandardMaterial({
-          color: "#080c09", map: woodMap, metalness: 0.65, roughness: 0.22,
+          color: "#252726", map: floorMap, metalness: 0.45, roughness: 0.28,
         }));
         const roomFloor = new THREE.Mesh(roomFloorGeom, roomFloorMat);
         roomFloor.position.set(0, -3.2, 0);
         boardroomGroup.add(roomFloor);
 
-        // 2. Room Ceiling: Architectural drop ceiling with recessed LED lighting
+        // 2. Room Ceiling: Architectural drop ceiling with recessed linear LED luminaire
         const roomCeilGeom = keep(new THREE.PlaneGeometry(24, 22));
         roomCeilGeom.rotateX(Math.PI / 2);
         const roomCeilMat = keep(new THREE.MeshStandardMaterial({
-          color: "#0f1411", roughness: 0.78,
+          color: "#1c201e", roughness: 0.65,
         }));
         const roomCeiling = new THREE.Mesh(roomCeilGeom, roomCeilMat);
         roomCeiling.position.set(0, 6.2, 0);
         boardroomGroup.add(roomCeiling);
 
-        // Recessed linear LED troffer light directly above conference table
-        const ledTrofferGeom = keep(new THREE.BoxGeometry(4.2, 0.06, 9.2));
-        const ledTrofferMat = keep(new THREE.MeshBasicMaterial({ color: "#f7f4d5" }));
+        // Recessed linear LED troffer luminaire directly above conference table
+        const ledTrofferGeom = keep(new THREE.BoxGeometry(4.8, 0.08, 9.8));
+        const ledTrofferMat = keep(new THREE.MeshBasicMaterial({ color: "#fffef2" }));
         const ledTroffer = new THREE.Mesh(ledTrofferGeom, ledTrofferMat);
         ledTroffer.position.set(0, 6.16, 0);
         boardroomGroup.add(ledTroffer);
 
-        // Warm executive boardroom illumination
-        const boardroomSpot = new THREE.PointLight("#ede7d9", 95, 26, 2);
-        boardroomSpot.position.set(0, 5.6, 0);
-        boardroomGroup.add(boardroomSpot);
+        // Bright architectural boardroom studio illumination (lights up the room and table clearly)
+        const tableSpot1 = new THREE.SpotLight(0xfff6ea, 280, 32, Math.PI / 2.8, 0.4, 1.2);
+        tableSpot1.position.set(0, 5.8, 2.5);
+        const tableSpot2 = new THREE.SpotLight(0xfff6ea, 280, 32, Math.PI / 2.8, 0.4, 1.2);
+        tableSpot2.position.set(0, 5.8, -2.5);
+        const boardroomFill = new THREE.PointLight(0xffeed8, 175, 26, 1.2);
+        boardroomFill.position.set(0, 3.4, 0);
+        boardroomGroup.add(tableSpot1, tableSpot2, boardroomFill);
 
         // 3. Architectural Dark Slat Walls
         const wallMat = keep(new THREE.MeshStandardMaterial({
-          color: "#111513", map: metalMap, metalness: 0.72, roughness: 0.55,
+          color: "#181c1a", map: metalMap, metalness: 0.65, roughness: 0.52,
         }));
         const sideWallGeom = keep(new THREE.BoxGeometry(0.3, 9.4, 22));
         const leftWall = new THREE.Mesh(sideWallGeom, wallMat);
@@ -709,28 +711,42 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
         // Horizontal warm copper cove strips
         const coveGeom = keep(new THREE.BoxGeometry(0.06, 0.08, 21.8));
-        const coveMat = keep(new THREE.MeshBasicMaterial({ color: "#b8734a" }));
+        const coveMat = keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }));
         const leftCove = new THREE.Mesh(coveGeom, coveMat);
         leftCove.position.set(-11.2, 0, 0);
         const rightCove = new THREE.Mesh(coveGeom, coveMat);
         rightCove.position.set(11.2, 0, 0);
         boardroomGroup.add(leftWall, rightWall, leftCove, rightCove);
 
-        // Front & Back Architectural Entry Portals
-        const endWallGeom = keep(new THREE.BoxGeometry(22.8, 9.4, 0.3));
-        const frontWall = new THREE.Mesh(endWallGeom, wallMat);
-        frontWall.position.set(0, 1.5, 11);
-        const backWall = new THREE.Mesh(endWallGeom, wallMat);
-        backWall.position.set(0, 1.5, -11);
-        boardroomGroup.add(frontWall, backWall);
+        // Open Architectural Portals (Allows clear camera view into boardroom without blocking flight path)
+        const portalPillarGeom = keep(new THREE.BoxGeometry(5.2, 9.4, 0.4));
+        const portalLintelGeom = keep(new THREE.BoxGeometry(22.8, 2.2, 0.4));
+
+        const frontPillarL = new THREE.Mesh(portalPillarGeom, wallMat);
+        frontPillarL.position.set(-8.8, 1.5, 11);
+        const frontPillarR = new THREE.Mesh(portalPillarGeom, wallMat);
+        frontPillarR.position.set(8.8, 1.5, 11);
+        const frontLintel = new THREE.Mesh(portalLintelGeom, wallMat);
+        frontLintel.position.set(0, 5.1, 11);
+
+        const backPillarL = new THREE.Mesh(portalPillarGeom, wallMat);
+        backPillarL.position.set(-8.8, 1.5, -11);
+        const backPillarR = new THREE.Mesh(portalPillarGeom, wallMat);
+        backPillarR.position.set(8.8, 1.5, -11);
+        const backLintel = new THREE.Mesh(portalLintelGeom, wallMat);
+        backLintel.position.set(0, 5.1, -11);
+
+        boardroomGroup.add(frontPillarL, frontPillarR, frontLintel, backPillarL, backPillarR, backLintel);
 
         // --- THE EXECUTIVE BOAT-SHAPED CONFERENCE TABLE (Y = -2.8) ---
         const tableGroup = new THREE.Group();
         tableGroup.position.set(0, -2.8, 0);
 
-        // Center table top in dark walnut with beveled copper edge
+        // Center table top in rich warm American walnut
         const tableTopGeom = keep(new THREE.BoxGeometry(4.4, 0.22, 8.8));
         const tableTop = new THREE.Mesh(tableTopGeom, walnutWood);
+        tableSpot1.target = tableTop;
+        tableSpot2.target = tableTop;
 
         // Curved boat-shaped ends
         const endRadius = 2.2;
@@ -742,23 +758,17 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         backEnd.rotation.y = Math.PI;
         tableTop.add(frontEnd, backEnd);
 
-        // Polished copper perimeter edge band
+        // Polished copper/brass perimeter edge band
         const edgeTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.52, 0.05, 8.92)), copperMat);
         edgeTrim.position.y = -0.09;
         tableTop.add(edgeTrim);
-
-        // Holographic Simulation Beacon at center of conference table
-        const beaconGeom = keep(new THREE.OctahedronGeometry(0.35, 0));
-        holoBeacon = new THREE.Mesh(beaconGeom, gateLuminous);
-        holoBeacon.position.set(0, 0.55, 0);
-        tableTop.add(holoBeacon);
 
         // Center recessed connectivity and cable management trough
         const trough = new THREE.Mesh(keep(new THREE.BoxGeometry(0.72, 0.04, 6.4)), deepBlack);
         trough.position.y = 0.115;
         const troughGlow = new THREE.Mesh(
           keep(new THREE.PlaneGeometry(0.68, 6.3)),
-          keep(new THREE.MeshBasicMaterial({ color: "#3db88f", transparent: true, opacity: 0.4 }))
+          keep(new THREE.MeshBasicMaterial({ color: "#d49b63", transparent: true, opacity: 0.55 }))
         );
         troughGlow.rotateX(-Math.PI / 2);
         troughGlow.position.y = 0.025;
@@ -885,78 +895,32 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           { pos: [2.85, -2.8, 1.8], rotY: -Math.PI / 2, blotterPos: [1.6, 0.13, 1.8], blotterRotY: -Math.PI / 2 },
         ];
 
-        seatConfigs.forEach((cfg, r) => {
+        seatConfigs.forEach((cfg) => {
           const chair = createExecutiveChair();
           chair.position.set(...cfg.pos);
           chair.rotation.y = cfg.rotY;
           boardroomGroup!.add(chair);
 
-          // Executive Leather Blotter on table
-          const blotterMat = keep(new THREE.MeshStandardMaterial({ color: "#141816", roughness: 0.6 }));
+          // Executive Leather Blotter on table (warm charcoal/espresso leather pad)
+          const blotterMat = keep(new THREE.MeshStandardMaterial({ color: "#1c1917", roughness: 0.52 }));
           const blotter = new THREE.Mesh(chairGeoms.blotter, blotterMat);
           blotter.position.set(cfg.blotterPos[0], cfg.blotterPos[1], cfg.blotterPos[2]);
           blotter.rotation.y = cfg.blotterRotY;
           tableTop.add(blotter);
 
           // Sleek Touchscreen Tablet Console on blotter
-          const tablet = new THREE.Mesh(chairGeoms.terminal, gateLuminous);
+          const tabletMat = keep(new THREE.MeshStandardMaterial({
+            color: "#18201d", metalness: 0.85, roughness: 0.22,
+          }));
+          const tablet = new THREE.Mesh(chairGeoms.terminal, tabletMat);
           tablet.position.set(cfg.blotterPos[0], cfg.blotterPos[1] + 0.02, cfg.blotterPos[2]);
           tablet.rotation.y = cfg.blotterRotY;
           tableTop.add(tablet);
 
-          // Distinctive Floating C-Suite Crest above seat
-          const crestGroup = new THREE.Group();
-          crestGroup.position.set(cfg.pos[0], 2.2, cfg.pos[2]);
-
-          if (r === 0) {
-            // CEO: Royal Crest Diamond
-            const dGeom = keep(new THREE.TorusGeometry(0.68, 0.07, 4, 4));
-            dGeom.rotateZ(Math.PI / 4);
-            const diamond = new THREE.Mesh(dGeom, gateLuminous);
-            crestGroup.add(diamond);
-          } else if (r === 1) {
-            // CFO: Hexagonal Valuation Vault
-            const hGeom = keep(new THREE.TorusGeometry(0.65, 0.07, 6, 6));
-            const hex = new THREE.Mesh(hGeom, gateMint);
-            crestGroup.add(hex);
-          } else if (r === 2) {
-            // CMO: Waveform Acoustic Fins
-            const wRing = ring(0.64, 0.05, deepBlack, 0, 36);
-            for (let b = 0; b < 6; b++) {
-              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(0.07, 0.7, 0.04)), gateLuminous);
-              const fa = (b / 6) * Math.PI * 2;
-              fin.position.set(Math.cos(fa) * 0.62, Math.sin(fa) * 0.62, 0);
-              fin.rotation.z = fa;
-              wRing.add(fin);
-            }
-            crestGroup.add(wRing);
-          } else if (r === 3) {
-            // COO: Meshed Cog Gear Train
-            const gRing = ring(0.65, 0.08, deepBlack, 0, 36);
-            for (let g = 0; g < 12; g++) {
-              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(0.16, 0.07, 0.08)), gateLuminous);
-              const ga = (g / 12) * Math.PI * 2;
-              cog.position.set(Math.cos(ga) * 0.68, Math.sin(ga) * 0.68, 0);
-              cog.rotation.z = ga;
-              gRing.add(cog);
-            }
-            crestGroup.add(gRing);
-          } else {
-            // CTO: Octagonal Tech Grid Matrix
-            const oGeom = keep(new THREE.TorusGeometry(0.65, 0.07, 8, 8));
-            const oct = new THREE.Mesh(oGeom, gateMint);
-            const sX = new THREE.Mesh(keep(new THREE.BoxGeometry(1.2, 0.04, 0.04)), gateLuminous);
-            const sY = new THREE.Mesh(keep(new THREE.BoxGeometry(0.04, 1.2, 0.04)), gateLuminous);
-            crestGroup.add(oct, sX, sY);
-          }
-
-          boardroomGroup!.add(crestGroup);
-          chairCrests.push(crestGroup);
-
-          // Dedicated soft spotlight on each executive chair
-          const seatSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 38, 12, 2);
-          seatSpot.position.set(cfg.pos[0], 1.2, cfg.pos[2]);
-          boardroomGroup!.add(seatSpot);
+          // Dedicated warm architectural downlight directly above each chair
+          const chairDownlight = new THREE.PointLight(0xfff6ea, 65, 8, 1.8);
+          chairDownlight.position.set(cfg.pos[0], 2.2, cfg.pos[2]);
+          boardroomGroup!.add(chairDownlight);
         });
 
         scene.add(boardroomGroup);
@@ -1199,15 +1163,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
               hudPanels.forEach((panel, pIdx) => {
                 panel.position.y += Math.sin(t * 1.5 + pIdx * 1.2) * 0.002;
-              });
-
-              // Animate Boardroom Central Beacon & C-Suite Crests
-              if (holoBeacon) {
-                holoBeacon.rotation.y = t * 0.35;
-              }
-              chairCrests.forEach((crest, cIdx) => {
-                crest.rotation.y = t * 0.75 + cIdx;
-                crest.position.y = 2.9 + Math.sin(t * 2.2 + cIdx) * 0.08;
               });
 
               // Animate Floating Day 1 Acquisition Assets
