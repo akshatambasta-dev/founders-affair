@@ -80,6 +80,64 @@ function makePattern(kind: "weave" | "metal" | "floor") {
   return tex;
 }
 
+function makeHudTexture(header: string, title: string, detail: string) {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "rgba(8, 14, 11, 0.94)";
+  ctx.fillRect(0, 0, 512, 256);
+
+  // Border & corner brackets in mint green
+  ctx.strokeStyle = "rgba(61, 184, 143, 0.65)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(6, 6, 500, 244);
+
+  ctx.strokeStyle = "#52d6a4";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  // Top left
+  ctx.moveTo(6, 32); ctx.lineTo(6, 6); ctx.lineTo(32, 6);
+  // Top right
+  ctx.moveTo(480, 6); ctx.lineTo(506, 6); ctx.lineTo(506, 32);
+  // Bottom left
+  ctx.moveTo(6, 224); ctx.lineTo(6, 250); ctx.lineTo(32, 250);
+  // Bottom right
+  ctx.moveTo(480, 250); ctx.lineTo(506, 250); ctx.lineTo(506, 224);
+  ctx.stroke();
+
+  // Header tag
+  ctx.fillStyle = "#52d6a4";
+  ctx.font = "bold 16px monospace";
+  ctx.fillText(header, 24, 44);
+
+  // Main title
+  ctx.fillStyle = "#f7f4d5";
+  ctx.font = "bold 26px monospace";
+  ctx.fillText(title, 24, 105);
+
+  // Detail / telemetry
+  ctx.fillStyle = "rgba(247, 244, 213, 0.82)";
+  ctx.font = "16px monospace";
+  ctx.fillText(detail, 24, 160);
+
+  // Subtext / status
+  ctx.fillStyle = "#3db88f";
+  ctx.font = "14px monospace";
+  ctx.fillText("STATUS: CAUSAL LOOP VERIFIED // NODE: OK", 24, 215);
+
+  // Scanlines
+  ctx.fillStyle = "rgba(82, 214, 164, 0.08)";
+  for (let y = 10; y < 246; y += 6) {
+    ctx.fillRect(10, y, 492, 1);
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function ring(radius: number, tube: number, material: THREE.Material, z: number, segments = 88) {
   const mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 12, segments), material);
   mesh.position.z = z;
@@ -222,6 +280,14 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
     let finaleIris: ReturnType<typeof createMechanicalAperture> | null = null;
     const roleGates: THREE.Group[] = [];
     const stockBars: THREE.Mesh[] = [];
+    let boardroomGroup: THREE.Group | null = null;
+    let holoBeacon: THREE.Mesh | null = null;
+    const laserScanners: THREE.Group[] = [];
+    const hudPanels: THREE.Mesh[] = [];
+    const chairCrests: THREE.Group[] = [];
+    const floatingAssets: THREE.Mesh[] = [];
+    const simulatedCheques: THREE.Mesh[] = [];
+    const gearGlints: THREE.Group[] = [];
 
     const resources = new Set<{ dispose?: () => void }>();
     const keep = <T,>(item: T): T => {
@@ -305,6 +371,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }));
         const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#0b3d2e" }));
         const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#040705", side: THREE.DoubleSide }));
+        const copperMat = keep(new THREE.MeshStandardMaterial({
+          color: "#b8734a", metalness: .85, roughness: .24,
+          emissive: "#4a2410", emissiveIntensity: .65,
+        }));
 
         // --- ATMOSPHERIC DARK EMERALD & PINE LIGHTING ---
         scene.add(new THREE.HemisphereLight(0x1aa072, 0x040705, 1.55));
@@ -321,7 +391,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
         const addLight = (color: string, power: number, distance: number, pos: [number, number, number]) => {
           const light = new THREE.PointLight(color, power, distance, 2);
-          light.position.set(...pos); scene.add(light);
+          light.position.set(...pos); scene?.add(light);
         };
         addLight("#0b3d2e", 110, 36, [0, 1.6, -5]);
         addLight("#1aa072", 95, 42, [-5, 4, -30]);
@@ -480,13 +550,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           return group;
         };
 
-        // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
-        // Lighter green with black so each gate architecture and animation is strongly visible
-        const roleZ = [-46, -51.5, -57, -62.5, -68] as const;
-        const roleNames = ["CEO", "CFO", "CMO", "COO", "CTO"] as const;
-
-        // 4 cardinal glints stationed around the Gear Gate rim (top, bottom, left, right)
-        const gearGlints: THREE.Group[] = [];
+        // 4 cardinal optical star glints stationed around the Gear Gate rim (top, bottom, left, right)
         const gearGlintAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
         gearGlintAngles.forEach((angle) => {
           const glint = createStarGlint(0.85);
@@ -495,105 +559,285 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           gearGlints.push(glint);
         });
 
-        // 5 keystone glints placed on the apex of each C-Suite portal
-        const roleGlints: THREE.Group[] = [];
-        for (let r = 0; r < 5; r++) {
-          const glint = createStarGlint(0.72);
-          glint.position.set(0, 5.8, roleZ[r] ?? -50);
-          scene!.add(glint);
-          roleGlints.push(glint);
+        // --- SCENE 3: SIMULATION INITIALIZATION CORRIDOR (Z = -12 to -38) ---
+        // Establishes the corporate simulation engine right after title reveal:
+        // $100,000 telemetry HUD plaques, glowing laser scanner discs, and circuit traces
+        const scanPositions = [-16, -24, -32];
+        scanPositions.forEach((posZ, idx) => {
+          const scanGroup = new THREE.Group();
+          scanGroup.position.z = posZ;
+          const scanRing = ring(11.2, 0.08, gateLuminous, 0, 72);
+          const scanDiscMat = keep(new THREE.MeshBasicMaterial({
+            color: idx % 2 === 0 ? "#52d6a4" : "#3db88f",
+            transparent: true, opacity: 0.08, side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending, depthWrite: false,
+          }));
+          const scanDisc = new THREE.Mesh(keep(new THREE.CircleGeometry(11.0, 48)), scanDiscMat);
+          scanGroup.add(scanRing, scanDisc);
+          scene!.add(scanGroup);
+          laserScanners.push(scanGroup);
+        });
+
+        // 3 Simulation Telemetry HUD Plaques along the corridor walls
+        const hudGeom = keep(new THREE.PlaneGeometry(6.4, 3.2));
+        const hudData = [
+          {
+            pos: [-6.8, 1.2, -18] as [number, number, number], rotY: 0.35,
+            header: "[ SIMULATION PROTOCOL // INITIALIZED ]",
+            title: "STARTING CAPITAL: $100,000.00",
+            detail: "5 SEATS // 1 VENTURE // TWO DAYS TO BUILD & RUN",
+          },
+          {
+            pos: [6.8, -0.6, -26] as [number, number, number], rotY: -0.35,
+            header: "[ EXECUTIVE MANDATE // TWO DAYS ]",
+            title: "DAY 01: BUILD & MOVE // DAY 02: FUND",
+            detail: "ACQUISITION · CRISIS · STOCK MARKET · BRAND WAR",
+          },
+          {
+            pos: [-6.5, 0.4, -34] as [number, number, number], rotY: 0.3,
+            header: "[ CAUSAL MARKET FEED: LIVE ]",
+            title: "DECISION CONSEQUENCE LOOP: ACTIVE",
+            detail: "APPROACHING THE EXECUTIVE BOARDROOM ROTUNDA",
+          },
+        ];
+
+        hudData.forEach((item) => {
+          const tex = keep(makeHudTexture(item.header, item.title, item.detail));
+          if (tex) {
+            const mat = keep(new THREE.MeshBasicMaterial({
+              map: tex, transparent: true, opacity: 0.95, side: THREE.DoubleSide,
+            }));
+            const plaque = new THREE.Mesh(hudGeom, mat);
+            plaque.position.set(...item.pos);
+            plaque.rotation.y = item.rotY;
+            scene!.add(plaque);
+            hudPanels.push(plaque);
+          }
+        });
+
+        // --- SCENE 4: THE EXECUTIVE BOARDROOM ROTUNDA (Z = -44 to -68) ---
+        // Tunnel expands into a cavernous circular boardroom rotunda with a central round table and 5 C-suite chairs
+        boardroomGroup = new THREE.Group();
+        boardroomGroup.position.set(0, 0, -55);
+
+        // Overhead circular rotunda structural truss
+        const rotundaTruss = ring(12.8, 0.28, darkSteel, 0, 72);
+        const rotundaCopperRing = ring(12.2, 0.12, copperMat, -0.15, 72);
+        boardroomGroup.add(rotundaTruss, rotundaCopperRing);
+
+        // 12 Colonnade fluted pillars around the boardroom perimeter
+        const colPillarGeom = keep(new THREE.CylinderGeometry(0.35, 0.42, 13, 16));
+        for (let c = 0; c < 12; c++) {
+          const a = (c / 12) * Math.PI * 2;
+          const col = new THREE.Mesh(colPillarGeom, c % 2 === 0 ? darkSteel : deepBlack);
+          col.position.set(Math.cos(a) * 12.8, 0, Math.sin(a) * 12.8);
+          const cap = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.48, 0.48, 0.2, 16)), copperMat);
+          cap.position.y = 6.4;
+          const base = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.52, 0.52, 0.25, 16)), copperMat);
+          base.position.y = -6.4;
+          col.add(cap, base);
+          boardroomGroup.add(col);
         }
 
+        // Overhead central executive dome spotlight
+        const boardroomSpot = new THREE.PointLight("#ede7d9", 95, 28, 2);
+        boardroomSpot.position.set(0, 6.2, 0);
+        boardroomGroup.add(boardroomSpot);
+
+        // --- THE EXECUTIVE ROUND TABLE (Y = -2.8) ---
+        const tableGroup = new THREE.Group();
+        tableGroup.position.set(0, -2.8, 0);
+
+        // Table Top in polished deep black obsidian with beveled copper edge
+        const tableTopGeom = keep(new THREE.CylinderGeometry(5.4, 5.4, 0.28, 64));
+        const tableTop = new THREE.Mesh(tableTopGeom, deepBlack);
+        const tableEdge = ring(5.4, 0.14, copperMat, 0, 64);
+        tableEdge.rotation.x = Math.PI / 2;
+        const innerTrace = ring(3.6, 0.05, gateMint, 0.14, 64);
+        innerTrace.rotation.x = Math.PI / 2;
+        tableTop.add(tableEdge, innerTrace);
+
+        // Center Holographic Projection Hub
+        const holoCoreGeom = keep(new THREE.CylinderGeometry(1.6, 1.6, 0.08, 32));
+        const holoCore = new THREE.Mesh(holoCoreGeom, gateLuminous);
+        holoCore.position.y = 0.16;
+
+        // Upward conical holographic projection beacon
+        const beaconGeom = keep(new THREE.CylinderGeometry(0.9, 1.6, 4.2, 32, 1, true));
+        const beaconMat = keep(new THREE.MeshBasicMaterial({
+          color: "#52d6a4", transparent: true, opacity: 0.22,
+          side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false,
+        }));
+        holoBeacon = new THREE.Mesh(beaconGeom, beaconMat);
+        holoBeacon.position.y = 2.1;
+        holoCore.add(holoBeacon);
+        tableTop.add(holoCore);
+
+        // Central sturdy pedestal column
+        const pedestalGeom = keep(new THREE.CylinderGeometry(1.4, 2.2, 2.6, 24));
+        const pedestal = new THREE.Mesh(pedestalGeom, darkSteel);
+        pedestal.position.y = -1.4;
+        const pedestalBase = ring(2.2, 0.18, copperMat, 0, 36);
+        pedestalBase.rotation.x = Math.PI / 2;
+        pedestalBase.position.y = -1.2;
+        pedestal.add(pedestalBase);
+        tableTop.add(pedestal);
+
+        tableGroup.add(tableTop);
+        boardroomGroup.add(tableGroup);
+
+        // --- 5 EXECUTIVE BOARDROOM CHAIRS & C-SUITE STATIONS ---
+        const chairMeshGeoms = {
+          base: keep(new THREE.CylinderGeometry(0.08, 0.42, 0.9, 12)),
+          seat: keep(new THREE.BoxGeometry(1.2, 0.18, 1.15)),
+          back: keep(new THREE.BoxGeometry(1.12, 1.45, 0.14)),
+          arm: keep(new THREE.BoxGeometry(0.12, 0.45, 0.85)),
+          terminal: keep(new THREE.BoxGeometry(0.75, 0.04, 0.48)),
+        };
+
         for (let r = 0; r < 5; r++) {
-          const rz = roleZ[r] ?? -50;
-          const roleGroup = new THREE.Group();
-          roleGroup.position.z = rz;
+          const angle = (r / 5) * Math.PI * 2 - Math.PI / 2;
+          const dist = 4.25;
+          const cx = Math.cos(angle) * dist;
+          const cz = Math.sin(angle) * dist;
 
-          // Dedicated overhead spotlight for each C-suite gate in luminous green
-          const roleSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 55, 18, 2);
-          roleSpot.position.set(0, 5.5, rz + 1);
-          scene.add(roleSpot);
+          const chairStation = new THREE.Group();
+          chairStation.position.set(cx, -2.8, cz);
+          chairStation.rotation.y = -angle - Math.PI / 2;
 
-          // Horizontal architectural floor support beam
-          const beamGeom = keep(new THREE.BoxGeometry(14, .32, .45));
-          const beam = new THREE.Mesh(beamGeom, deepBlack);
-          beam.position.set(0, -6.5, 0);
-          roleGroup.add(beam);
+          // Hydraulic swivel base
+          const cBase = new THREE.Mesh(chairMeshGeoms.base, darkSteel);
+          cBase.position.y = 0.45;
 
-          // Heavy vertical portal pillars
-          const pillarGeom = keep(new THREE.BoxGeometry(.45, 13, .55));
-          const leftPillar = new THREE.Mesh(pillarGeom, gateMint);
-          leftPillar.position.set(-6.8, 0, 0);
-          const rightPillar = new THREE.Mesh(pillarGeom, gateMint);
-          rightPillar.position.set(6.8, 0, 0);
-          roleGroup.add(leftPillar, rightPillar);
+          // Contoured leather seat
+          const cSeat = new THREE.Mesh(chairMeshGeoms.seat, deepBlack);
+          cSeat.position.y = 0.95;
+
+          // High-back executive backrest with metallic border
+          const cBack = new THREE.Mesh(chairMeshGeoms.back, deepBlack);
+          cBack.position.set(0, 1.7, -0.5);
+          cBack.rotation.x = 0.12;
+
+          const cBackTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(1.16, 1.48, 0.04)), r % 2 === 0 ? copperMat : gateMint);
+          cBackTrim.position.set(0, 0, -0.06);
+          cBack.add(cBackTrim);
+
+          // Armrests
+          const lArm = new THREE.Mesh(chairMeshGeoms.arm, darkSteel);
+          lArm.position.set(-0.62, 1.25, 0);
+          const rArm = new THREE.Mesh(chairMeshGeoms.arm, darkSteel);
+          rArm.position.set(0.62, 1.25, 0);
+
+          chairStation.add(cBase, cSeat, cBack, lArm, rArm);
+
+          // Interactive terminal on table surface facing this chair
+          const terminal = new THREE.Mesh(chairMeshGeoms.terminal, gateLuminous);
+          terminal.position.set(0, 1.05, 1.2);
+          terminal.rotation.x = -0.35;
+          chairStation.add(terminal);
+
+          // Distinctive Floating C-Suite Crest above seat
+          const crestGroup = new THREE.Group();
+          crestGroup.position.set(0, 2.9, 0);
 
           if (r === 0) {
-            // CEO: Royal Crest diamond gate
-            const diamondGeom = keep(new THREE.TorusGeometry(5.8, .28, 4, 4));
-            diamondGeom.rotateZ(Math.PI / 4);
-            const diamond = new THREE.Mesh(diamondGeom, gateLuminous);
-            const innerRing = ring(4.5, .08, deepBlack, -.12, 64);
-            roleGroup.add(diamond, innerRing);
+            // CEO: Royal Crest Diamond
+            const dGeom = keep(new THREE.TorusGeometry(0.72, 0.08, 4, 4));
+            dGeom.rotateZ(Math.PI / 4);
+            const diamond = new THREE.Mesh(dGeom, gateLuminous);
+            crestGroup.add(diamond);
           } else if (r === 1) {
-            // CFO: Hexagonal Valuation Vault gate
-            const hexGeom = keep(new THREE.TorusGeometry(5.6, .3, 6, 6));
-            const hex = new THREE.Mesh(hexGeom, gateMint);
-            const innerTicker = ring(4.5, .09, gateLuminous, -.12, 64);
-            roleGroup.add(hex, innerTicker);
+            // CFO: Hexagonal Valuation Vault
+            const hGeom = keep(new THREE.TorusGeometry(0.7, 0.08, 6, 6));
+            const hex = new THREE.Mesh(hGeom, gateMint);
+            crestGroup.add(hex);
           } else if (r === 2) {
-            // CMO: Waveform Broadcast aperture
-            const waveRing = ring(5.6, .26, deepBlack, 0, 72);
-            for (let b = 0; b < 8; b++) {
-              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(.22, 2.6, .12)), gateLuminous);
-              const angle = (b / 8) * Math.PI * 2;
-              fin.position.set(Math.cos(angle) * 5.4, Math.sin(angle) * 5.4, -.06);
-              fin.rotation.z = angle;
-              roleGroup.add(fin);
+            // CMO: Waveform Acoustic Fins
+            const wRing = ring(0.68, 0.06, deepBlack, 0, 36);
+            for (let b = 0; b < 6; b++) {
+              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(0.08, 0.75, 0.05)), gateLuminous);
+              const fa = (b / 6) * Math.PI * 2;
+              fin.position.set(Math.cos(fa) * 0.65, Math.sin(fa) * 0.65, 0);
+              fin.rotation.z = fa;
+              wRing.add(fin);
             }
-            roleGroup.add(waveRing);
+            crestGroup.add(wRing);
           } else if (r === 3) {
-            // COO: Clockwork Meshed Gear Train gate
-            const gearRing = ring(5.5, .32, deepBlack, 0, 72);
-            for (let g = 0; g < 24; g++) {
-              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(.5, .25, .35)), gateLuminous);
-              const angle = (g / 24) * Math.PI * 2;
-              cog.position.set(Math.cos(angle) * 5.6, Math.sin(angle) * 5.6, 0);
-              cog.rotation.z = angle;
-              roleGroup.add(cog);
+            // COO: Meshed Cog Gear Train
+            const gRing = ring(0.7, 0.09, deepBlack, 0, 36);
+            for (let g = 0; g < 12; g++) {
+              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(0.18, 0.08, 0.1)), gateLuminous);
+              const ga = (g / 12) * Math.PI * 2;
+              cog.position.set(Math.cos(ga) * 0.72, Math.sin(ga) * 0.72, 0);
+              cog.rotation.z = ga;
+              gRing.add(cog);
             }
-            roleGroup.add(gearRing);
+            crestGroup.add(gRing);
           } else {
             // CTO: Octagonal Tech Grid Matrix
-            const octGeom = keep(new THREE.TorusGeometry(5.6, .28, 8, 8));
-            const oct = new THREE.Mesh(octGeom, gateMint);
-            const coreSpokeX = new THREE.Mesh(keep(new THREE.BoxGeometry(10.5, .14, .14)), gateLuminous);
-            const coreSpokeY = new THREE.Mesh(keep(new THREE.BoxGeometry(.14, 10.5, .14)), gateLuminous);
-            roleGroup.add(oct, coreSpokeX, coreSpokeY);
+            const oGeom = keep(new THREE.TorusGeometry(0.7, 0.08, 8, 8));
+            const oct = new THREE.Mesh(oGeom, gateMint);
+            const sX = new THREE.Mesh(keep(new THREE.BoxGeometry(1.3, 0.04, 0.04)), gateLuminous);
+            const sY = new THREE.Mesh(keep(new THREE.BoxGeometry(0.04, 1.3, 0.04)), gateLuminous);
+            crestGroup.add(oct, sX, sY);
           }
 
-          scene.add(roleGroup);
-          roleGates.push(roleGroup);
+          chairStation.add(crestGroup);
+          chairCrests.push(crestGroup);
+
+          // Dedicated spotlight for each seat station
+          const seatSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 42, 14, 2);
+          seatSpot.position.set(cx, 1.2, cz);
+          boardroomGroup.add(seatSpot);
+
+          boardroomGroup.add(chairStation);
         }
 
-        // --- SCENE 4b: DAY 1 - STOCK MARKET & BOARDROOM CRISIS (Z = -74) ---
-        // 3D Volumetric Financial Candlestick / Order-Book Depth Terrain in Emerald & Sage
+        scene.add(boardroomGroup);
+
+        // --- SCENE 4b: DAY 01 — MARKET CRUCIBLE (Z = -74 to -92) ---
+        // Acquisition Auction Stage, Boardroom Crisis Hub & Stock Market Candlestick Canyon
         dayOne = new THREE.Group(); dayOne.position.z = -74;
 
-        // Central Floor Market Arch
-        const marketArch = ring(4.8, .16, sage, 0, 64);
-        dayOne.add(marketArch);
+        // Elevated Octagonal Acquisition Stage
+        const octStageGeom = keep(new THREE.CylinderGeometry(4.2, 4.6, 0.5, 8));
+        const octStage = new THREE.Mesh(octStageGeom, deepBlack);
+        const stageCopperEdge = ring(4.4, 0.12, copperMat, 0.25, 8);
+        stageCopperEdge.rotation.x = Math.PI / 2;
+        octStage.add(stageCopperEdge);
+        octStage.position.y = -6.2;
+        dayOne.add(octStage);
 
-        // 3D Financial Candlestick / Volumetric Depth bars flanked on both sides of corridor
+        // Auction Gavel Pedestal
+        const gavelPedestal = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.4, 0.55, 1.4, 16)), darkSteel);
+        gavelPedestal.position.set(0, -5.3, 0);
+        const gavelHead = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.12, 0.12, 0.6, 12)), copperMat);
+        gavelHead.rotation.z = Math.PI / 2;
+        gavelHead.position.y = 0.75;
+        gavelPedestal.add(gavelHead);
+        dayOne.add(gavelPedestal);
+
+        // 3 Floating Acquisition Asset Blocks rotating above magnetic rings
+        const assetCubeGeom = keep(new THREE.BoxGeometry(0.8, 0.8, 0.8));
+        for (let a = 0; a < 3; a++) {
+          const assetMat = a % 2 === 0 ? gateLuminous : gateMint;
+          const assetMesh = new THREE.Mesh(assetCubeGeom, assetMat);
+          const aAngle = (a / 3) * Math.PI * 2;
+          assetMesh.position.set(Math.cos(aAngle) * 2.6, -4.8, Math.sin(aAngle) * 2.6);
+          dayOne.add(assetMesh);
+          floatingAssets.push(assetMesh);
+        }
+
+        // Flanking 3D Financial Candlestick bars in the canyon
         const candleGeom = keep(new THREE.BoxGeometry(.42, 1, .42));
         const barHeights = [2.2, 4.1, 1.6, 5.4, 3.2, 4.8, 2.7, 6.1, 3.8, 5.0];
         for (let i = 0; i < barHeights.length; i++) {
-          const h = barHeights[i];
+          const h = barHeights[i] ?? 3.0;
           const isUp = i % 3 !== 1;
-          const barMesh = new THREE.Mesh(candleGeom, isUp ? emerald : sage);
+          const barMesh = new THREE.Mesh(candleGeom, isUp ? gateLuminous : darkSteel);
           const side = i % 2 === 0 ? -1 : 1;
-          const x = side * (5.5 + (i * 0.45));
-          const zOffset = (i - 5) * 1.8;
+          const x = side * (6.0 + (i * 0.4));
+          const zOffset = (i - 5) * 1.8 - 12; // spans into stock canyon
           barMesh.scale.set(1, h, 1);
           barMesh.position.set(x, -6.5 + (h / 2), zOffset);
           dayOne.add(barMesh);
@@ -601,20 +845,46 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         scene.add(dayOne);
 
-        // --- SCENE 4c: DAY 2 - INVESTOR MARKETPLACE ROTUNDA (Z = -94) ---
-        dayTwo = new THREE.Group(); dayTwo.position.z = -94;
+        // --- SCENE 4c: DAY 02 — INVESTOR MARKETPLACE & BRAND WAR (Z = -98 to -115) ---
+        dayTwo = new THREE.Group(); dayTwo.position.z = -105;
 
-        const conclavePortal = ring(4.8, .22, emerald, 0, 80);
-        const innerConclaveRing = ring(4.2, .08, sage, -.15, 80);
+        // Conclave Portal
+        const conclavePortal = ring(5.6, .22, gateMint, 0, 80);
+        const innerConclaveRing = ring(5.0, .08, copperMat, -.15, 80);
         dayTwo.add(conclavePortal, innerConclaveRing);
 
-        // 6 Vertical architectural illuminated light columns in Sage & Emerald
-        const colGeom = keep(new THREE.BoxGeometry(.28, 11.5, .32));
-        for (let c = 0; c < 6; c++) {
-          const colMesh = new THREE.Mesh(colGeom, c % 2 === 0 ? sage : emerald);
-          const x = (c - 2.5) * 2.8;
-          colMesh.position.set(x, 0, -.3);
-          dayTwo.add(colMesh);
+        // 4 Investor Exhibition Stalls with floating simulated cheque envelopes
+        const chequeGeom = keep(new THREE.BoxGeometry(1.4, 0.85, 0.08));
+        const chequeMat = keep(new THREE.MeshStandardMaterial({
+          color: "#f7f4d5", metalness: 0.2, roughness: 0.35,
+          emissive: "#3db88f", emissiveIntensity: 0.45,
+        }));
+        const sealGeom = keep(new THREE.CylinderGeometry(0.18, 0.18, 0.1, 16));
+
+        for (let st = 0; st < 4; st++) {
+          const stallGroup = new THREE.Group();
+          const side = st % 2 === 0 ? -1 : 1;
+          const zPos = st < 2 ? -4 : 4;
+          stallGroup.position.set(side * 6.5, -4.5, zPos);
+
+          // Desk
+          const desk = new THREE.Mesh(keep(new THREE.BoxGeometry(2.4, 0.15, 1.2)), darkSteel);
+          const deskLegs = new THREE.Mesh(keep(new THREE.BoxGeometry(2.2, 1.6, 1.0)), deepBlack);
+          deskLegs.position.y = -0.8;
+          stallGroup.add(desk, deskLegs);
+
+          // Floating Cheque Envelope
+          const cheque = new THREE.Mesh(chequeGeom, chequeMat);
+          cheque.position.set(0, 1.1, 0);
+          cheque.rotation.x = 0.2;
+          const seal = new THREE.Mesh(sealGeom, copperMat);
+          seal.rotation.x = Math.PI / 2;
+          seal.position.z = 0.05;
+          cheque.add(seal);
+          stallGroup.add(cheque);
+          simulatedCheques.push(cheque);
+
+          dayTwo.add(stallGroup);
         }
         scene.add(dayTwo);
 
@@ -781,26 +1051,44 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
               }
             }
 
-            // Animate Role Gates subtly on approach
-            roleGates.forEach((gate, gIdx) => {
-              gate.rotation.z = reduced ? 0 : Math.sin(t * 0.8 + gIdx) * 0.08;
-            });
-
-            // Animate 4-point specular star glints (optical sparkle on gear teeth & portals)
+            // Animate Simulation Telemetry HUD & Laser Scanners
             if (!reduced) {
+              laserScanners.forEach((scanner, sIdx) => {
+                scanner.rotation.z = t * 0.45 * (sIdx % 2 === 0 ? 1 : -1);
+              });
+
+              hudPanels.forEach((panel, pIdx) => {
+                panel.position.y += Math.sin(t * 1.5 + pIdx * 1.2) * 0.002;
+              });
+
+              // Animate Boardroom Central Beacon & C-Suite Crests
+              if (holoBeacon) {
+                holoBeacon.rotation.y = t * 0.35;
+              }
+              chairCrests.forEach((crest, cIdx) => {
+                crest.rotation.y = t * 0.75 + cIdx;
+                crest.position.y = 2.9 + Math.sin(t * 2.2 + cIdx) * 0.08;
+              });
+
+              // Animate Floating Day 1 Acquisition Assets
+              floatingAssets.forEach((asset, aIdx) => {
+                asset.rotation.x = t * 0.8 + aIdx;
+                asset.rotation.y = t * 0.6 + aIdx;
+                asset.position.y = -4.8 + Math.sin(t * 2.5 + aIdx) * 0.15;
+              });
+
+              // Animate Floating Day 2 Simulated Cheques
+              simulatedCheques.forEach((cheque, cIdx) => {
+                cheque.position.y = 1.1 + Math.sin(t * 2.0 + cIdx * 1.5) * 0.08;
+                cheque.rotation.y = Math.sin(t * 1.2 + cIdx) * 0.15;
+              });
+
+              // Animate 4-point specular star glints on Gear Gate
               gearGlints.forEach((glint, idx) => {
                 const toothPass = Math.sin((gear ? gear.rotation.z : 0) * 18 + idx * (Math.PI / 2));
                 const flare = Math.max(0.2, toothPass);
                 const s = 0.5 + flare * 0.75;
                 glint.scale.set(s, s, 1);
-              });
-
-              roleGlints.forEach((glint, rIdx) => {
-                const targetZ = roleZ[rIdx] ?? -50;
-                const dist = Math.abs(camZ - targetZ);
-                const prox = Math.max(0, 1 - dist / 18);
-                const flare = prox * (0.4 + Math.sin(t * 3.2 + rIdx * 1.4) * 0.5);
-                glint.scale.set(flare, flare, 1);
               });
             }
 
