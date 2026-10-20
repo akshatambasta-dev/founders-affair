@@ -1177,30 +1177,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
         // --- CINEMATIC EXECUTIVE CAMERA SPLINE ---
         // S-curves horizontally (X), elevates and swoops over stations (Y), banks dynamically into turns (roll Z)
-        // Passes dead-center through portals: Opening Iris (Z = 28), Gear Gate (Z = -6.65), Boardroom Portals (Z = -44, -66),
-        // BUILD/MOVE/FUND Rings (Z = -116), Finale Iris (Z = -142).
-        const camPoints = [
-          new THREE.Vector3(0, 0, 38),             // 0.00: Opening aperture start
-          new THREE.Vector3(0, 0, 26.5),           // 0.06: Glide dead-center through Opening Iris (Z = 28)
-          new THREE.Vector3(1.35, -0.42, 10.5),    // 0.14: Bank right & dip low framing Gear Gate teeth & title
-          new THREE.Vector3(0, 0, -6.65),          // 0.235: Glide dead-center through Gear Gate inner hub
-          new THREE.Vector3(-1.65, 0.45, -18.5),   // 0.30: Swoop left to frame Atrium Milestone Plaque 1
-          new THREE.Vector3(1.5, 0.25, -28.5),     // 0.36: Bank right to frame Atrium Milestone Plaque 2
-          new THREE.Vector3(0, 0.15, -42),         // 0.41: Center alignment entering Boardroom Front Portal
-          new THREE.Vector3(-1.3, -0.85, -50),     // 0.46: Cinematic table-height sweep framing CEO & left chairs
-          new THREE.Vector3(1.15, -0.88, -58),     // 0.51: Glide across walnut table towards right chairs
-          new THREE.Vector3(0, -0.05, -66),        // 0.55: Ascend & exit through Boardroom Back Portal
-          new THREE.Vector3(1.7, 0.38, -74),       // 0.59: Bank right over Day 1 Acquisition Rostrum & Gavel
-          new THREE.Vector3(-1.5, -0.15, -82),     // 0.63: Dip left framing Day 1 Crisis Command Console
-          new THREE.Vector3(0.2, 0.28, -90),       // 0.67: Level off over Market Valuation Board
-          new THREE.Vector3(-1.2, -0.12, -100),    // 0.73: Sway over Day 2 Investor Partner Desk 1
-          new THREE.Vector3(1.15, -0.1, -108),     // 0.77: Sway over Day 2 Investor Partner Desk 2
-          new THREE.Vector3(0, 0, -116),           // 0.82: Dead center through BUILD / MOVE / FUND Rings
-          new THREE.Vector3(0, 0, -138),           // 0.92: Approach Finale Mechanical Iris
-          new THREE.Vector3(0, 0, -154),           // 1.00: Settle dead center in Finale Calm Sanctuary
-        ];
-        const camSpline = new THREE.CatmullRomCurve3(camPoints, false, "catmullrom", 0.35);
-
         // --- RENDER LOOP ---
         const render = (now: number) => {
           if (cancelled) return;
@@ -1211,19 +1187,36 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
 
-            // Spatially choreographed cinematic camera path along Catmull-Rom spline
-            const camPos = camSpline.getPointAt(p);
-            camera!.position.copy(camPos);
+            // Multi-directional cinematic camera flight path:
+            // S-curves horizontally (X), elevates and swoops over stations (Y), and banks dynamically (roll Z)
+            const camZ = 38 - p * 190;
+            
+            // Gateway dampening: broad sweeping flight between stations, but smoothly aligned
+            // when passing through key gates: Opening Iris (p ≈ 0.05), Gear Gate (p ≈ 0.235), Finale Portal (p ≈ 0.95)
+            const gateDamp = Math.max(0.2, 1 - 0.45 * Math.exp(-Math.pow((p - 0.235) / 0.06, 2))
+                                             - 0.65 * Math.exp(-Math.pow((p - 0.05) / 0.05, 2))
+                                             - 0.55 * Math.exp(-Math.pow((p - 0.95) / 0.06, 2)));
 
-            // Dynamic look-ahead along the spline curve with lead offset
-            const lookP = Math.min(1, p + 0.032);
-            const lookTarget = camSpline.getPointAt(lookP);
-            camera!.lookAt(lookTarget.x, lookTarget.y, lookTarget.z);
+            // Smoothly align and center the camera straight ahead for the finale calm chamber
+            const finaleCenter = smooth(0.83, 0.96, p);
 
-            // Dynamic camera roll / bank into horizontal turns (drone/dolly roll)
+            // Smoothly engage multi-directional camera flight as the opening gate opens (p = 0.01 -> 0.08)
+            const openingFlight = smooth(0.01, 0.08, p);
+
+            // Horizontal sway: swoops left towards Boardroom, right towards Stock Market, centers at Ring Triad & Finale
+            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp * (1 - finaleCenter) * openingFlight;
+            // Vertical pitch: dead center on opening iris at p=0, then elevates over gate and swoops across stations
+            const camY = (Math.sin(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp * (1 - finaleCenter) * openingFlight;
+            camera!.position.set(camX, camY, camZ);
+
+            // Dynamic look-ahead with banking & yaw towards upcoming stations, centered at Opening & Finale
+            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp * (1 - finaleCenter) * openingFlight;
+            const lookTargetY = Math.sin((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp * (1 - finaleCenter) * openingFlight;
+            camera!.lookAt(lookTargetX, lookTargetY, camZ - 22);
+
+            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly), leveling at Opening & Finale
             if (!reduced) {
-              const tangent = camSpline.getTangentAt(p);
-              const bankAngle = -tangent.x * 0.14;
+              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp * (1 - finaleCenter) * openingFlight;
               camera!.rotation.z = bankAngle;
             }
 
