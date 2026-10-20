@@ -13,7 +13,7 @@ const smooth = (a: number, b: number, n: number) => {
   return t * t * (3 - 2 * t);
 };
 
-function makePattern(kind: "weave" | "metal" | "floor") {
+function makePattern(kind: "weave" | "metal" | "floor" | "wood" | "leather") {
   const c = document.createElement("canvas");
   c.width = c.height = 512;
   const x = c.getContext("2d");
@@ -58,6 +58,37 @@ function makePattern(kind: "weave" | "metal" | "floor") {
       x.moveTo((i * 97) % 512, (i * 179) % 512);
       x.lineTo((i * 97) % 512 + 4 + i % 14, (i * 179) % 512 + (i % 7) - 3);
       x.stroke();
+    }
+  } else if (kind === "wood") {
+    // Elegant dark executive walnut grain
+    x.fillStyle = "#121614";
+    x.fillRect(0, 0, 512, 512);
+    for (let y = 0; y < 512; y += 2) {
+      const gAlpha = 0.08 + Math.sin(y * 0.032) * 0.04 + Math.sin(y * 0.11) * 0.02;
+      x.fillStyle = `rgba(184, 115, 74, ${Math.max(0, gAlpha)})`;
+      x.fillRect(0, y, 512, 2);
+    }
+    for (let i = 0; i < 120; i++) {
+      x.strokeStyle = i % 2 === 0 ? "rgba(11, 61, 46, 0.22)" : "rgba(237, 231, 217, 0.05)";
+      x.lineWidth = 1;
+      x.beginPath();
+      const startY = (i * 23) % 512;
+      x.moveTo(0, startY);
+      for (let px = 0; px <= 512; px += 32) {
+        const wave = Math.sin(px * 0.015 + i) * 5;
+        x.lineTo(px, startY + wave);
+      }
+      x.stroke();
+    }
+  } else if (kind === "leather") {
+    // High-end black executive chair leather with fine stipple grain
+    x.fillStyle = "#0c0f0d";
+    x.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 1500; i++) {
+      const rx = (i * 97) % 512;
+      const ry = (i * 157) % 512;
+      x.fillStyle = i % 2 === 0 ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.22)";
+      x.fillRect(rx, ry, 2, 2);
     }
   } else {
     x.fillStyle = "#0e1511"; x.fillRect(0, 0, 512, 512);
@@ -318,9 +349,13 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const weaveMap = keep(makePattern("weave"));
         const metalMap = keep(makePattern("metal"));
         const floorMap = keep(makePattern("floor"));
+        const woodMap = keep(makePattern("wood"));
+        const leatherMap = keep(makePattern("leather"));
         if (weaveMap) weaveMap.repeat.set(3, 2);
         if (metalMap) metalMap.repeat.set(2, 4);
         if (floorMap) floorMap.repeat.set(2, 8);
+        if (woodMap) woodMap.repeat.set(3, 2);
+        if (leatherMap) leatherMap.repeat.set(2, 2);
 
         // --- HIGH-CONTRAST PALETTE FOR 3D ENVIRONMENT ---
         // --- PURE GREEN & BLACK PALETTE FOR 3D ENVIRONMENT ---
@@ -374,6 +409,15 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const copperMat = keep(new THREE.MeshStandardMaterial({
           color: "#b8734a", metalness: .85, roughness: .24,
           emissive: "#4a2410", emissiveIntensity: .65,
+        }));
+        const walnutWood = keep(new THREE.MeshStandardMaterial({
+          color: "#221c17", map: woodMap, metalness: 0.15, roughness: 0.38,
+        }));
+        const executiveLeather = keep(new THREE.MeshStandardMaterial({
+          color: "#0c0e0d", map: leatherMap, metalness: 0.22, roughness: 0.42,
+        }));
+        const chromeMetal = keep(new THREE.MeshStandardMaterial({
+          color: "#d8dad8", metalness: 0.95, roughness: 0.16,
         }));
 
         // --- ATMOSPHERIC DARK EMERALD & PINE LIGHTING ---
@@ -615,163 +659,305 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           }
         });
 
-        // --- SCENE 4: THE EXECUTIVE BOARDROOM ROTUNDA (Z = -44 to -68) ---
+        // --- SCENE 4: THE EXECUTIVE BOARDROOM SUITE (Z = -44 to -66) ---
+        // Authentic executive boardroom with architectural walls, linear LED troffers,
+        // polished boat-shaped walnut/copper conference table, and 5 ergonomic Eames-style leather chairs
         boardroomGroup = new THREE.Group();
         boardroomGroup.position.set(0, 0, -55);
 
-        // Overhead central executive dome spotlight
-        const boardroomSpot = new THREE.PointLight("#ede7d9", 95, 28, 2);
-        boardroomSpot.position.set(0, 6.2, 0);
+        // 1. Room Floor: Polished executive dark walnut / terrazzo
+        const roomFloorGeom = keep(new THREE.PlaneGeometry(24, 22));
+        roomFloorGeom.rotateX(-Math.PI / 2);
+        const roomFloorMat = keep(new THREE.MeshStandardMaterial({
+          color: "#080c09", map: woodMap, metalness: 0.65, roughness: 0.22,
+        }));
+        const roomFloor = new THREE.Mesh(roomFloorGeom, roomFloorMat);
+        roomFloor.position.set(0, -3.2, 0);
+        boardroomGroup.add(roomFloor);
+
+        // 2. Room Ceiling: Architectural drop ceiling with recessed LED lighting
+        const roomCeilGeom = keep(new THREE.PlaneGeometry(24, 22));
+        roomCeilGeom.rotateX(Math.PI / 2);
+        const roomCeilMat = keep(new THREE.MeshStandardMaterial({
+          color: "#0f1411", roughness: 0.78,
+        }));
+        const roomCeiling = new THREE.Mesh(roomCeilGeom, roomCeilMat);
+        roomCeiling.position.set(0, 6.2, 0);
+        boardroomGroup.add(roomCeiling);
+
+        // Recessed linear LED troffer light directly above conference table
+        const ledTrofferGeom = keep(new THREE.BoxGeometry(4.2, 0.06, 9.2));
+        const ledTrofferMat = keep(new THREE.MeshBasicMaterial({ color: "#f7f4d5" }));
+        const ledTroffer = new THREE.Mesh(ledTrofferGeom, ledTrofferMat);
+        ledTroffer.position.set(0, 6.16, 0);
+        boardroomGroup.add(ledTroffer);
+
+        // Warm executive boardroom illumination
+        const boardroomSpot = new THREE.PointLight("#ede7d9", 95, 26, 2);
+        boardroomSpot.position.set(0, 5.6, 0);
         boardroomGroup.add(boardroomSpot);
 
-        // --- THE EXECUTIVE ROUND TABLE (Y = -2.8) ---
+        // 3. Architectural Dark Slat Walls
+        const wallMat = keep(new THREE.MeshStandardMaterial({
+          color: "#111513", map: metalMap, metalness: 0.72, roughness: 0.55,
+        }));
+        const sideWallGeom = keep(new THREE.BoxGeometry(0.3, 9.4, 22));
+        const leftWall = new THREE.Mesh(sideWallGeom, wallMat);
+        leftWall.position.set(-11.4, 1.5, 0);
+        const rightWall = new THREE.Mesh(sideWallGeom, wallMat);
+        rightWall.position.set(11.4, 1.5, 0);
+
+        // Horizontal warm copper cove strips
+        const coveGeom = keep(new THREE.BoxGeometry(0.06, 0.08, 21.8));
+        const coveMat = keep(new THREE.MeshBasicMaterial({ color: "#b8734a" }));
+        const leftCove = new THREE.Mesh(coveGeom, coveMat);
+        leftCove.position.set(-11.2, 0, 0);
+        const rightCove = new THREE.Mesh(coveGeom, coveMat);
+        rightCove.position.set(11.2, 0, 0);
+        boardroomGroup.add(leftWall, rightWall, leftCove, rightCove);
+
+        // Front & Back Architectural Entry Portals
+        const endWallGeom = keep(new THREE.BoxGeometry(22.8, 9.4, 0.3));
+        const frontWall = new THREE.Mesh(endWallGeom, wallMat);
+        frontWall.position.set(0, 1.5, 11);
+        const backWall = new THREE.Mesh(endWallGeom, wallMat);
+        backWall.position.set(0, 1.5, -11);
+        boardroomGroup.add(frontWall, backWall);
+
+        // --- THE EXECUTIVE BOAT-SHAPED CONFERENCE TABLE (Y = -2.8) ---
         const tableGroup = new THREE.Group();
         tableGroup.position.set(0, -2.8, 0);
 
-        // Table Top in polished deep black obsidian with beveled copper edge
-        const tableTopGeom = keep(new THREE.CylinderGeometry(5.4, 5.4, 0.28, 64));
-        const tableTop = new THREE.Mesh(tableTopGeom, deepBlack);
-        const tableEdge = ring(5.4, 0.14, copperMat, 0, 64);
-        tableEdge.rotation.x = Math.PI / 2;
-        const innerTrace = ring(3.6, 0.05, gateMint, 0.14, 64);
-        innerTrace.rotation.x = Math.PI / 2;
-        tableTop.add(tableEdge, innerTrace);
+        // Center table top in dark walnut with beveled copper edge
+        const tableTopGeom = keep(new THREE.BoxGeometry(4.4, 0.22, 8.8));
+        const tableTop = new THREE.Mesh(tableTopGeom, walnutWood);
 
-        // Center Holographic Projection Hub
-        const holoCoreGeom = keep(new THREE.CylinderGeometry(1.6, 1.6, 0.08, 32));
-        const holoCore = new THREE.Mesh(holoCoreGeom, gateLuminous);
-        holoCore.position.y = 0.16;
+        // Curved boat-shaped ends
+        const endRadius = 2.2;
+        const tableEndGeom = keep(new THREE.CylinderGeometry(endRadius, endRadius, 0.22, 32, 1, false, 0, Math.PI));
+        const frontEnd = new THREE.Mesh(tableEndGeom, walnutWood);
+        frontEnd.position.set(0, 0, 4.4);
+        const backEnd = new THREE.Mesh(tableEndGeom, walnutWood);
+        backEnd.position.set(0, 0, -4.4);
+        backEnd.rotation.y = Math.PI;
+        tableTop.add(frontEnd, backEnd);
 
-        // Upward conical holographic projection beacon
-        const beaconGeom = keep(new THREE.CylinderGeometry(0.9, 1.6, 4.2, 32, 1, true));
-        const beaconMat = keep(new THREE.MeshBasicMaterial({
-          color: "#52d6a4", transparent: true, opacity: 0.22,
-          side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false,
-        }));
-        holoBeacon = new THREE.Mesh(beaconGeom, beaconMat);
-        holoBeacon.position.y = 2.1;
-        holoCore.add(holoBeacon);
-        tableTop.add(holoCore);
+        // Polished copper perimeter edge band
+        const edgeTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.52, 0.05, 8.92)), copperMat);
+        edgeTrim.position.y = -0.09;
+        tableTop.add(edgeTrim);
 
-        // Central sturdy pedestal column
-        const pedestalGeom = keep(new THREE.CylinderGeometry(1.4, 2.2, 2.6, 24));
-        const pedestal = new THREE.Mesh(pedestalGeom, darkSteel);
-        pedestal.position.y = -1.4;
-        const pedestalBase = ring(2.2, 0.18, copperMat, 0, 36);
-        pedestalBase.rotation.x = Math.PI / 2;
-        pedestalBase.position.y = -1.2;
-        pedestal.add(pedestalBase);
-        tableTop.add(pedestal);
+        // Holographic Simulation Beacon at center of conference table
+        const beaconGeom = keep(new THREE.OctahedronGeometry(0.35, 0));
+        holoBeacon = new THREE.Mesh(beaconGeom, gateLuminous);
+        holoBeacon.position.set(0, 0.55, 0);
+        tableTop.add(holoBeacon);
 
-        tableGroup.add(tableTop);
+        // Center recessed connectivity and cable management trough
+        const trough = new THREE.Mesh(keep(new THREE.BoxGeometry(0.72, 0.04, 6.4)), deepBlack);
+        trough.position.y = 0.115;
+        const troughGlow = new THREE.Mesh(
+          keep(new THREE.PlaneGeometry(0.68, 6.3)),
+          keep(new THREE.MeshBasicMaterial({ color: "#3db88f", transparent: true, opacity: 0.4 }))
+        );
+        troughGlow.rotateX(-Math.PI / 2);
+        troughGlow.position.y = 0.025;
+        trough.add(troughGlow);
+        tableTop.add(trough);
+
+        // Dual Heavy Architectural Pedestals with Chamfered Copper Foot Plates
+        const plinthGeom = keep(new THREE.BoxGeometry(1.4, 2.5, 0.75));
+        const plinthFront = new THREE.Mesh(plinthGeom, darkSteel);
+        plinthFront.position.set(0, -1.35, 2.4);
+        const plinthBack = new THREE.Mesh(plinthGeom, darkSteel);
+        plinthBack.position.set(0, -1.35, -2.4);
+
+        const footPlateGeom = keep(new THREE.BoxGeometry(2.2, 0.1, 1.3));
+        const footFront = new THREE.Mesh(footPlateGeom, copperMat);
+        footFront.position.y = -1.25;
+        plinthFront.add(footFront);
+        const footBack = new THREE.Mesh(footPlateGeom, copperMat);
+        footBack.position.y = -1.25;
+        plinthBack.add(footBack);
+
+        tableGroup.add(tableTop, plinthFront, plinthBack);
         boardroomGroup.add(tableGroup);
 
-        // --- 5 EXECUTIVE BOARDROOM CHAIRS & C-SUITE STATIONS ---
-        const chairMeshGeoms = {
-          base: keep(new THREE.CylinderGeometry(0.08, 0.42, 0.9, 12)),
-          seat: keep(new THREE.BoxGeometry(1.2, 0.18, 1.15)),
-          back: keep(new THREE.BoxGeometry(1.12, 1.45, 0.14)),
-          arm: keep(new THREE.BoxGeometry(0.12, 0.45, 0.85)),
-          terminal: keep(new THREE.BoxGeometry(0.75, 0.04, 0.48)),
+        // --- 5 ERGONOMIC EXECUTIVE BOARDROOM CHAIRS (EAMES / HERMAN MILLER STYLE) ---
+        const chairGeoms = {
+          starLeg: keep(new THREE.CylinderGeometry(0.035, 0.02, 0.54, 8)),
+          wheel: keep(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 12)),
+          column: keep(new THREE.CylinderGeometry(0.045, 0.045, 0.52, 16)),
+          tilt: keep(new THREE.BoxGeometry(0.32, 0.1, 0.32)),
+          seat: keep(new THREE.BoxGeometry(1.05, 0.14, 1.02)),
+          backFrame: keep(new THREE.BoxGeometry(1.04, 1.32, 0.05)),
+          rib: keep(new THREE.BoxGeometry(0.96, 0.34, 0.1)),
+          arm: keep(new THREE.BoxGeometry(0.07, 0.035, 0.7)),
+          armPost: keep(new THREE.CylinderGeometry(0.025, 0.025, 0.3, 12)),
+          blotter: keep(new THREE.PlaneGeometry(0.85, 0.52)),
+          terminal: keep(new THREE.BoxGeometry(0.68, 0.03, 0.44)),
+        };
+        chairGeoms.starLeg.rotateZ(Math.PI / 2);
+        chairGeoms.wheel.rotateX(Math.PI / 2);
+        chairGeoms.blotter.rotateX(-Math.PI / 2);
+
+        const createExecutiveChair = () => {
+          const chair = new THREE.Group();
+
+          // 1. Five-Star Chrome Caster Base
+          const baseHub = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.1, 0.1, 0.08, 16)), chromeMetal);
+          baseHub.position.y = 0.1;
+          chair.add(baseHub);
+
+          for (let s = 0; s < 5; s++) {
+            const sAngle = (s / 5) * Math.PI * 2;
+            const leg = new THREE.Mesh(chairGeoms.starLeg, chromeMetal);
+            leg.position.set(Math.cos(sAngle) * 0.27, 0.1, Math.sin(sAngle) * 0.27);
+            leg.rotation.y = -sAngle;
+            const wheel = new THREE.Mesh(chairGeoms.wheel, deepBlack);
+            wheel.position.set(0.26, -0.05, 0);
+            leg.add(wheel);
+            chair.add(leg);
+          }
+
+          // 2. Hydraulic Lift Column & Tilt Housing
+          const col = new THREE.Mesh(chairGeoms.column, chromeMetal);
+          col.position.y = 0.36;
+          const tilt = new THREE.Mesh(chairGeoms.tilt, darkSteel);
+          tilt.position.y = 0.62;
+          chair.add(col, tilt);
+
+          // 3. Ergonomic Contoured Seat in Soft Obsidian Leather
+          const seatGroup = new THREE.Group();
+          seatGroup.position.set(0, 0.72, 0);
+
+          const seat = new THREE.Mesh(chairGeoms.seat, executiveLeather);
+          seatGroup.add(seat);
+
+          // 4. Executive High-Back with 3 Horizontal Stitched Leather Pillows
+          const backGroup = new THREE.Group();
+          backGroup.position.set(0, 0.65, -0.45);
+          backGroup.rotation.x = 0.12;
+
+          const backFrame = new THREE.Mesh(chairGeoms.backFrame, chromeMetal);
+          backGroup.add(backFrame);
+
+          for (let p = 0; p < 3; p++) {
+            const rib = new THREE.Mesh(chairGeoms.rib, executiveLeather);
+            rib.position.set(0, -0.4 + p * 0.4, 0.06);
+            backGroup.add(rib);
+          }
+          seatGroup.add(backGroup);
+
+          // 5. Continuous Loop Armrests in Polished Chrome
+          const lArm = new THREE.Mesh(chairGeoms.arm, chromeMetal);
+          lArm.position.set(-0.55, 0.34, -0.05);
+          const rArm = new THREE.Mesh(chairGeoms.arm, chromeMetal);
+          rArm.position.set(0.55, 0.34, -0.05);
+
+          const lPost = new THREE.Mesh(chairGeoms.armPost, chromeMetal);
+          lPost.position.set(-0.55, 0.17, 0.12);
+          const rPost = new THREE.Mesh(chairGeoms.armPost, chromeMetal);
+          rPost.position.set(0.55, 0.17, 0.12);
+
+          seatGroup.add(lArm, rArm, lPost, rPost);
+          chair.add(seatGroup);
+
+          return chair;
         };
 
-        for (let r = 0; r < 5; r++) {
-          const angle = (r / 5) * Math.PI * 2 - Math.PI / 2;
-          const dist = 4.25;
-          const cx = Math.cos(angle) * dist;
-          const cz = Math.sin(angle) * dist;
+        // Positions of the 5 C-Suite Seats around the Table:
+        // Seat 0: CEO (Head of table, facing down)
+        // Seat 1: CFO (Left upper)
+        // Seat 2: CMO (Left lower)
+        // Seat 3: COO (Right upper)
+        // Seat 4: CTO (Right lower)
+        const seatConfigs: Array<{
+          pos: [number, number, number];
+          rotY: number;
+          blotterPos: [number, number, number];
+          blotterRotY: number;
+        }> = [
+          { pos: [0, -2.8, -5.3], rotY: 0, blotterPos: [0, 0.13, -3.8], blotterRotY: 0 },
+          { pos: [-2.85, -2.8, -1.8], rotY: Math.PI / 2, blotterPos: [-1.6, 0.13, -1.8], blotterRotY: Math.PI / 2 },
+          { pos: [-2.85, -2.8, 1.8], rotY: Math.PI / 2, blotterPos: [-1.6, 0.13, 1.8], blotterRotY: Math.PI / 2 },
+          { pos: [2.85, -2.8, -1.8], rotY: -Math.PI / 2, blotterPos: [1.6, 0.13, -1.8], blotterRotY: -Math.PI / 2 },
+          { pos: [2.85, -2.8, 1.8], rotY: -Math.PI / 2, blotterPos: [1.6, 0.13, 1.8], blotterRotY: -Math.PI / 2 },
+        ];
 
-          const chairStation = new THREE.Group();
-          chairStation.position.set(cx, -2.8, cz);
-          chairStation.rotation.y = -angle - Math.PI / 2;
+        seatConfigs.forEach((cfg, r) => {
+          const chair = createExecutiveChair();
+          chair.position.set(...cfg.pos);
+          chair.rotation.y = cfg.rotY;
+          boardroomGroup!.add(chair);
 
-          // Hydraulic swivel base
-          const cBase = new THREE.Mesh(chairMeshGeoms.base, darkSteel);
-          cBase.position.y = 0.45;
+          // Executive Leather Blotter on table
+          const blotterMat = keep(new THREE.MeshStandardMaterial({ color: "#141816", roughness: 0.6 }));
+          const blotter = new THREE.Mesh(chairGeoms.blotter, blotterMat);
+          blotter.position.set(cfg.blotterPos[0], cfg.blotterPos[1], cfg.blotterPos[2]);
+          blotter.rotation.y = cfg.blotterRotY;
+          tableTop.add(blotter);
 
-          // Contoured leather seat
-          const cSeat = new THREE.Mesh(chairMeshGeoms.seat, deepBlack);
-          cSeat.position.y = 0.95;
-
-          // High-back executive backrest with metallic border
-          const cBack = new THREE.Mesh(chairMeshGeoms.back, deepBlack);
-          cBack.position.set(0, 1.7, -0.5);
-          cBack.rotation.x = 0.12;
-
-          const cBackTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(1.16, 1.48, 0.04)), r % 2 === 0 ? copperMat : gateMint);
-          cBackTrim.position.set(0, 0, -0.06);
-          cBack.add(cBackTrim);
-
-          // Armrests
-          const lArm = new THREE.Mesh(chairMeshGeoms.arm, darkSteel);
-          lArm.position.set(-0.62, 1.25, 0);
-          const rArm = new THREE.Mesh(chairMeshGeoms.arm, darkSteel);
-          rArm.position.set(0.62, 1.25, 0);
-
-          chairStation.add(cBase, cSeat, cBack, lArm, rArm);
-
-          // Interactive terminal on table surface facing this chair
-          const terminal = new THREE.Mesh(chairMeshGeoms.terminal, gateLuminous);
-          terminal.position.set(0, 1.05, 1.2);
-          terminal.rotation.x = -0.35;
-          chairStation.add(terminal);
+          // Sleek Touchscreen Tablet Console on blotter
+          const tablet = new THREE.Mesh(chairGeoms.terminal, gateLuminous);
+          tablet.position.set(cfg.blotterPos[0], cfg.blotterPos[1] + 0.02, cfg.blotterPos[2]);
+          tablet.rotation.y = cfg.blotterRotY;
+          tableTop.add(tablet);
 
           // Distinctive Floating C-Suite Crest above seat
           const crestGroup = new THREE.Group();
-          crestGroup.position.set(0, 2.9, 0);
+          crestGroup.position.set(cfg.pos[0], 2.2, cfg.pos[2]);
 
           if (r === 0) {
             // CEO: Royal Crest Diamond
-            const dGeom = keep(new THREE.TorusGeometry(0.72, 0.08, 4, 4));
+            const dGeom = keep(new THREE.TorusGeometry(0.68, 0.07, 4, 4));
             dGeom.rotateZ(Math.PI / 4);
             const diamond = new THREE.Mesh(dGeom, gateLuminous);
             crestGroup.add(diamond);
           } else if (r === 1) {
             // CFO: Hexagonal Valuation Vault
-            const hGeom = keep(new THREE.TorusGeometry(0.7, 0.08, 6, 6));
+            const hGeom = keep(new THREE.TorusGeometry(0.65, 0.07, 6, 6));
             const hex = new THREE.Mesh(hGeom, gateMint);
             crestGroup.add(hex);
           } else if (r === 2) {
             // CMO: Waveform Acoustic Fins
-            const wRing = ring(0.68, 0.06, deepBlack, 0, 36);
+            const wRing = ring(0.64, 0.05, deepBlack, 0, 36);
             for (let b = 0; b < 6; b++) {
-              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(0.08, 0.75, 0.05)), gateLuminous);
+              const fin = new THREE.Mesh(keep(new THREE.BoxGeometry(0.07, 0.7, 0.04)), gateLuminous);
               const fa = (b / 6) * Math.PI * 2;
-              fin.position.set(Math.cos(fa) * 0.65, Math.sin(fa) * 0.65, 0);
+              fin.position.set(Math.cos(fa) * 0.62, Math.sin(fa) * 0.62, 0);
               fin.rotation.z = fa;
               wRing.add(fin);
             }
             crestGroup.add(wRing);
           } else if (r === 3) {
             // COO: Meshed Cog Gear Train
-            const gRing = ring(0.7, 0.09, deepBlack, 0, 36);
+            const gRing = ring(0.65, 0.08, deepBlack, 0, 36);
             for (let g = 0; g < 12; g++) {
-              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(0.18, 0.08, 0.1)), gateLuminous);
+              const cog = new THREE.Mesh(keep(new THREE.BoxGeometry(0.16, 0.07, 0.08)), gateLuminous);
               const ga = (g / 12) * Math.PI * 2;
-              cog.position.set(Math.cos(ga) * 0.72, Math.sin(ga) * 0.72, 0);
+              cog.position.set(Math.cos(ga) * 0.68, Math.sin(ga) * 0.68, 0);
               cog.rotation.z = ga;
               gRing.add(cog);
             }
             crestGroup.add(gRing);
           } else {
             // CTO: Octagonal Tech Grid Matrix
-            const oGeom = keep(new THREE.TorusGeometry(0.7, 0.08, 8, 8));
+            const oGeom = keep(new THREE.TorusGeometry(0.65, 0.07, 8, 8));
             const oct = new THREE.Mesh(oGeom, gateMint);
-            const sX = new THREE.Mesh(keep(new THREE.BoxGeometry(1.3, 0.04, 0.04)), gateLuminous);
-            const sY = new THREE.Mesh(keep(new THREE.BoxGeometry(0.04, 1.3, 0.04)), gateLuminous);
+            const sX = new THREE.Mesh(keep(new THREE.BoxGeometry(1.2, 0.04, 0.04)), gateLuminous);
+            const sY = new THREE.Mesh(keep(new THREE.BoxGeometry(0.04, 1.2, 0.04)), gateLuminous);
             crestGroup.add(oct, sX, sY);
           }
 
-          chairStation.add(crestGroup);
+          boardroomGroup!.add(crestGroup);
           chairCrests.push(crestGroup);
 
-          // Dedicated spotlight for each seat station
-          const seatSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 42, 14, 2);
-          seatSpot.position.set(cx, 1.2, cz);
-          boardroomGroup.add(seatSpot);
-
-          boardroomGroup.add(chairStation);
-        }
+          // Dedicated soft spotlight on each executive chair
+          const seatSpot = new THREE.PointLight(r % 2 === 0 ? "#52d6a4" : "#3db88f", 38, 12, 2);
+          seatSpot.position.set(cfg.pos[0], 1.2, cfg.pos[2]);
+          boardroomGroup!.add(seatSpot);
+        });
 
         scene.add(boardroomGroup);
 
