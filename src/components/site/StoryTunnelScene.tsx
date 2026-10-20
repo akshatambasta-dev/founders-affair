@@ -36,12 +36,12 @@ function makePattern(kind: "weave" | "metal" | "floor" | "wood" | "leather") {
   } else if (kind === "metal") {
     // TPF-inspired fine-line banknote guilloche & copperplate engraving hatching
     const g = x.createLinearGradient(0, 0, 512, 512);
-    g.addColorStop(0, "#28322c"); g.addColorStop(.5, "#141c17"); g.addColorStop(1, "#222a25");
+    g.addColorStop(0, "#2a201a"); g.addColorStop(.5, "#181310"); g.addColorStop(1, "#241c16");
     x.fillStyle = g; x.fillRect(0, 0, 512, 512);
 
     // Fine-line undulating guilloche curves
     for (let i = 0; i < 512; i += 8) {
-      x.strokeStyle = i % 24 === 0 ? "rgba(184,115,74,.24)" : "rgba(205,213,193,.09)";
+      x.strokeStyle = i % 24 === 0 ? "rgba(184,115,74,.24)" : "rgba(220,185,150,.12)";
       x.lineWidth = i % 24 === 0 ? 1.2 : 0.6;
       x.beginPath();
       for (let y = 0; y <= 512; y += 16) {
@@ -91,7 +91,7 @@ function makePattern(kind: "weave" | "metal" | "floor" | "wood" | "leather") {
       x.fillRect(rx, ry, 2, 2);
     }
   } else {
-    x.fillStyle = "#0e1511"; x.fillRect(0, 0, 512, 512);
+    x.fillStyle = "#161311"; x.fillRect(0, 0, 512, 512);
     // Engraved floor tiles with copper reveal inlays
     for (let i = 0; i < 512; i += 32) {
       x.strokeStyle = "rgba(184,115,74,.18)";
@@ -338,55 +338,52 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         if (woodMap) woodMap.repeat.set(3, 2);
         if (leatherMap) leatherMap.repeat.set(2, 2);
 
-        // --- HIGH-CONTRAST PALETTE FOR 3D ENVIRONMENT ---
-        // --- PURE GREEN & BLACK PALETTE FOR 3D ENVIRONMENT ---
-        // Dark Green: Deep Emerald (#0b3d2e), Deep Forest Patina (#08241b)
-        // Accent Green: Luminous Pine Emerald (#1aa072 / #116345)
-        // Set against deep Obsidian Black (#0A0A0A) & Charcoal (#141816)
-        // --- GATE SPECIFIC HIGH-CONTRAST MATERIALS ---
-        // Lighter, luminous greens for gates: Mint-Emerald (#3db88f / #52d6a4) against Charcoal/Black (#0a0a0a / #18201c)
-        // This ensures opening iris aperture blades, rotating gear gate teeth/spokes, and C-suite gates are clearly visible during motion
+        // --- EXECUTIVE ARCHITECTURAL PALETTE (RICH WALNUT, COGNAC & CHAMPAGNE BRASS) ---
+        // Warm Walnut: Deep American Walnut (#4a2c1a), Warm Mahogany (#382217)
+        // Accent Metals: Champagne Brass (#e6b77c), Antique Bronze (#c88a50), Brushed Copper (#b8734a)
+        // Leather: Executive Cognac / Saddle Leather (#744326 / #8a522e)
+        // Set against deep Obsidian Noir (#0e0c0b) & Smoked Espresso Charcoal (#181412)
         const gateMint = keep(new THREE.MeshStandardMaterial({
-          color: "#3db88f", metalness: .4, roughness: .22,
-          emissive: "#1b6b4e", emissiveIntensity: 1.35,
+          color: "#c88a50", metalness: .82, roughness: .24,
+          emissive: "#4a2410", emissiveIntensity: .65,
         }));
         const gateLuminous = keep(new THREE.MeshStandardMaterial({
-          color: "#52d6a4", metalness: .3, roughness: .18,
-          emissive: "#28946c", emissiveIntensity: 1.6,
+          color: "#e6b77c", metalness: .88, roughness: .2,
+          emissive: "#6e3f19", emissiveIntensity: .85,
         }));
         const gateTeal = keep(new THREE.MeshStandardMaterial({
-          color: "#105666", metalness: .65, roughness: .32,
-          emissive: "#093844", emissiveIntensity: .65,
+          color: "#54331d", metalness: .65, roughness: .32,
+          emissive: "#2e190d", emissiveIntensity: .5,
         }));
         const darkSteel = keep(new THREE.MeshStandardMaterial({
-          color: "#18201c", map: metalMap, metalness: .88, roughness: .42,
+          color: "#1c1917", map: metalMap, metalness: .88, roughness: .42,
         }));
         const charcoal = keep(new THREE.MeshStandardMaterial({
-          color: "#141816", map: metalMap, metalness: .82, roughness: .5,
+          color: "#181412", map: metalMap, metalness: .82, roughness: .5,
         }));
         const deepBlack = keep(new THREE.MeshStandardMaterial({
-          color: "#0a0a0a", metalness: .9, roughness: .6,
+          color: "#0e0c0b", metalness: .9, roughness: .6,
         }));
         const emerald = keep(new THREE.MeshStandardMaterial({
-          color: "#0b3d2e", metalness: .78, roughness: .35,
-          emissive: "#051f17", emissiveIntensity: .85,
+          color: "#4a2c1a", metalness: .78, roughness: .35,
+          emissive: "#24130a", emissiveIntensity: .65,
         }));
         const emeraldGlow = keep(new THREE.MeshStandardMaterial({
-          color: "#1aa072", metalness: .35, roughness: .2,
-          emissive: "#116345", emissiveIntensity: 1.5,
+          color: "#d48e50", metalness: .45, roughness: .22,
+          emissive: "#6e3f19", emissiveIntensity: 1.1,
         }));
         const sage = keep(new THREE.MeshStandardMaterial({
-          color: "#08241b", metalness: .75, roughness: .38,
-          emissive: "#04140f", emissiveIntensity: .65,
+          color: "#382217", metalness: .75, roughness: .38,
+          emissive: "#1a0d07", emissiveIntensity: .5,
         }));
         const metal = keep(new THREE.MeshStandardMaterial({
-          color: "#0b3d2e", map: metalMap, metalness: .85, roughness: .28,
+          color: "#4a2c1a", map: metalMap, metalness: .82, roughness: .32,
         }));
         const floorMaterial = keep(new THREE.MeshStandardMaterial({
-          color: "#060e0a", map: floorMap, metalness: .75, roughness: .3, side: THREE.DoubleSide,
+          color: "#141210", map: floorMap, metalness: .65, roughness: .35, side: THREE.DoubleSide,
         }));
-        const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#0b3d2e" }));
-        const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#040705", side: THREE.DoubleSide }));
+        const warmPortal = keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }));
+        const darkBackdrop = keep(new THREE.MeshBasicMaterial({ color: "#0c0a09", side: THREE.DoubleSide }));
         const copperMat = keep(new THREE.MeshStandardMaterial({
           color: "#b8734a", metalness: .85, roughness: .24,
           emissive: "#4a2410", emissiveIntensity: .65,
@@ -450,14 +447,14 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const rib = ring(
             milestone ? 12.12 : 12.34,
             milestone ? .22 : .1,
-            milestone ? emerald : darkSteel,
+            milestone ? copperMat : darkSteel,
             z,
           );
           keep(rib.geometry); scene.add(rib);
           if (milestone) {
-            const inner = ring(11.86, .04, emeraldGlow, z - .11);
+            const inner = ring(11.86, .04, gateLuminous, z - .11);
             keep(inner.geometry); scene.add(inner);
-            const milestoneGlow = new THREE.PointLight("#0b3d2e", 18, 12, 2);
+            const milestoneGlow = new THREE.PointLight("#d49b63", 22, 14, 2);
             milestoneGlow.position.set(0, 0, z);
             scene.add(milestoneGlow);
           }
@@ -486,12 +483,12 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           }
           const curve = new THREE.CatmullRomCurve3(points);
           const geom = keep(new THREE.TubeGeometry(curve, 110, j % 4 === 0 ? .09 : .045, 6, false));
-          scene.add(new THREE.Mesh(geom, j % 4 === 0 ? sage : emerald));
+          scene.add(new THREE.Mesh(geom, j % 4 === 0 ? copperMat : darkSteel));
         }
 
         // --- SCENE 1: OPENING MECHANICAL IRIS APERTURE (Z = 28) ---
-        // Light mint green blades against dark black steel housing so opening animation is clearly visible
-        openingIris = createMechanicalAperture(scene, 28, 8.2, gateMint, darkSteel, keep);
+        // Warm brushed copper and dark steel blades
+        openingIris = createMechanicalAperture(scene, 28, 8.2, copperMat, darkSteel, keep);
 
         // Optional custom model drop-in: if the user places iris-door.glb in /public/, load it
         try {
@@ -515,20 +512,20 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
 
         // --- SCENE 2: GEAR GATE (Z = -6.6) ---
-        // High-contrast luminous lighter green with black so rotating motion is sharply visible
+        // High-contrast warm copper & champagne brass with dark steel
         gear = new THREE.Group(); gear.position.z = -6.6;
         const gateRings = [
           ring(10.6, .32, deepBlack, 0),
-          ring(9.9, .15, gateLuminous, -.18),
+          ring(9.9, .15, copperMat, -.18),
           ring(7.6, .22, gateMint, -.38),
           ring(5.4, .16, darkSteel, -.56),
           ring(3.4, .09, gateLuminous, -.82),
         ];
         gateRings.forEach((item) => { keep(item.geometry); gear!.add(item); });
         
-        // High-visibility luminous lighter green drive teeth that pop crisply against obsidian space
+        // High-visibility warm copper drive teeth that pop crisply against dark space
         const toothGeometry = keep(new THREE.BoxGeometry(1.2, .48, .85));
-        const teeth = new THREE.InstancedMesh(toothGeometry, gateLuminous, 36);
+        const teeth = new THREE.InstancedMesh(toothGeometry, copperMat, 36);
         const tooth = new THREE.Object3D();
         for (let i = 0; i < 36; i++) {
           const a = (i / 36) * Math.PI * 2;
@@ -539,10 +536,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         teeth.instanceMatrix.needsUpdate = true; gear.add(teeth);
 
-        // Heavy counter-rotating inner spoke hub in high-contrast Mint & Luminous Green
+        // Heavy counter-rotating inner spoke hub in warm Copper & Champagne Brass
         const spokeGeometry = keep(new THREE.BoxGeometry(4.2, .18, .28));
         for (let i = 0; i < 8; i++) {
-          const spoke = new THREE.Mesh(spokeGeometry, i % 2 === 0 ? gateMint : gateLuminous);
+          const spoke = new THREE.Mesh(spokeGeometry, i % 2 === 0 ? copperMat : gateLuminous);
           const a = (i / 8) * Math.PI * 2;
           spoke.position.set(Math.cos(a) * 4.1, Math.sin(a) * 4.1, -.28);
           spoke.rotation.z = a;
@@ -553,7 +550,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         // --- 4-POINT SPECULAR STAR GLINTS (Ten Pound Feather optical glints) ---
         // Sharp 4-ray optical glints reflecting off rotating metal drive teeth and gate keystones
         const starMat = keep(new THREE.MeshBasicMaterial({
-          color: "#52d6a4",
+          color: "#fff6ea",
           transparent: true,
           opacity: 0.85,
           blending: THREE.AdditiveBlending,
@@ -1023,11 +1020,11 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const outer = ring(item.r, .18, item.material, 0, 80);
           const inner = ring(item.r - .36, .05, darkSteel, -.18, 72);
           outer.position.x = inner.position.x = item.x;
-          const bridge = new THREE.Mesh(keep(new THREE.BoxGeometry(.08, item.r * 1.7, .12)), index === 1 ? sage : darkSteel);
+          const bridge = new THREE.Mesh(keep(new THREE.BoxGeometry(.08, item.r * 1.7, .12)), index === 1 ? copperMat : darkSteel);
           bridge.position.set(item.x, 0, -.08);
 
           const pylonGeom = keep(new THREE.BoxGeometry(.22, 2.2, .24));
-          const pylon = new THREE.Mesh(pylonGeom, emerald);
+          const pylon = new THREE.Mesh(pylonGeom, walnutWood);
           pylon.position.set(item.x, -item.r - 0.4, -.08);
 
           [outer, inner, bridge, pylon].forEach((part) => {
@@ -1038,19 +1035,19 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         scene.add(ringTrio);
 
         // --- SCENE 6: FINALE MECHANICAL IRIS & CALM CHAMBER (Z = -142 to -164) ---
-        finaleIris = createMechanicalAperture(scene, -142, 8.5, gateMint, darkSteel, keep);
+        finaleIris = createMechanicalAperture(scene, -142, 8.5, copperMat, darkSteel, keep);
 
         const endWall = new THREE.Mesh(keep(new THREE.PlaneGeometry(48, 38)), darkBackdrop);
         endWall.position.z = -164.5; scene.add(endWall);
         endPortal = new THREE.Group(); endPortal.position.z = -160.8;
         [
-          ring(7.25, .18, emerald, 0, 120),
-          ring(6.75, .065, sage, -.08, 120),
+          ring(7.25, .18, copperMat, 0, 120),
+          ring(6.75, .065, walnutWood, -.08, 120),
           ring(5.98, .04, warmPortal, -.14, 120),
         ].forEach((part) => { keep(part.geometry); endPortal!.add(part); });
         scene.add(endPortal);
         const endGlowMat = keep(new THREE.MeshBasicMaterial({
-          color: "#0b3d2e", transparent: true, opacity: .18, side: THREE.DoubleSide,
+          color: "#d49b63", transparent: true, opacity: .18, side: THREE.DoubleSide,
         }));
         endGlow = new THREE.Mesh(keep(new THREE.CircleGeometry(5.82, 96)), endGlowMat);
         endGlow.position.z = -160.55; scene.add(endGlow);
@@ -1058,14 +1055,14 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         for (let i = 0; i < 7; i++) {
           const marker = new THREE.Mesh(
             keep(new THREE.BoxGeometry(.065, .035, 3.2)),
-            i % 2 === 0 ? sage : emerald,
+            i % 2 === 0 ? copperMat : walnutWood,
           );
           marker.position.set(0, -12.35, -139 - i * 2.4); scene.add(marker);
         }
 
         // Bolts
         const boltGeometry = keep(new THREE.SphereGeometry(.08, 8, 6));
-        const bolts = new THREE.InstancedMesh(boltGeometry, sage, 128);
+        const bolts = new THREE.InstancedMesh(boltGeometry, copperMat, 128);
         const bolt = new THREE.Object3D();
         let idx = 0;
         for (let i = 0; i < 31; i += 2) {
