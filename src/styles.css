@@ -907,6 +907,7 @@ footer a:hover { color:#f7f4d5; }
   line-height: 0.76;
   text-wrap: balance;
   text-shadow: none;
+  filter: url(#fa-letterpress);
 }
 .fa-main-title span {
   display: block;
@@ -954,6 +955,7 @@ footer a:hover { color:#f7f4d5; }
   text-wrap: balance;
   color: #f7f4d5;
   text-shadow: none;
+  filter: url(#fa-letterpress);
 }
 .fa-statement em,
 .fa-panel-heading em {
@@ -990,6 +992,7 @@ footer a:hover { color:#f7f4d5; }
   text-transform: uppercase;
   color: #f7f4d5;
   text-shadow: none;
+  filter: url(#fa-letterpress);
 }
 .fa-role-grid {
   display: grid;
@@ -1142,6 +1145,7 @@ footer a:hover { color:#f7f4d5; }
   text-wrap: balance;
   color: #f7f4d5;
   text-shadow: none;
+  filter: url(#fa-letterpress);
 }
 .fa-finale-quote em {
   color: #f7f4d5;
@@ -1182,7 +1186,7 @@ footer a:hover { color:#f7f4d5; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 .fa-contact-pill:hover {
   background: #f7f4d5;
@@ -1190,6 +1194,9 @@ footer a:hover { color:#f7f4d5; }
   color: #0a0a0a;
 }
 .fa-contact-pill--primary {
+  position: relative;
+  flex-direction: column;
+  padding: 0.65rem 1.85rem 0.55rem;
   background: #f7f4d5;
   border-color: #f7f4d5;
   color: #0a0a0a;
@@ -1198,6 +1205,34 @@ footer a:hover { color:#f7f4d5; }
   background: #f7f4d5;
   border-color: #f7f4d5;
   color: #0a0a0a;
+  transform: translateY(-2px);
+}
+.fa-cta-paraph {
+  display: block;
+  width: 100%;
+  max-width: 12.5rem;
+  height: 0.75rem;
+  margin-top: 0.18rem;
+  stroke: #0a0a0a;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  transition: stroke-dashoffset 0.65s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.4s ease;
+}
+.fa-contact-pill--primary:hover .fa-cta-paraph {
+  stroke-dashoffset: 0;
+  transform: scaleY(1.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-main-title,
+  .fa-statement,
+  .fa-panel-heading,
+  .fa-finale-quote {
+    filter: none;
+  }
+  .fa-cta-paraph {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
 }
 .fa-registration-pending { display: block; margin-top: 1.4rem; color: rgba(237,231,217,.45); font-size: .5rem; letter-spacing: .14em; }
 .fa-journey-progress { display: block; width: min(24vw,15rem); height: 1px; background: rgba(237,231,217,.22); }

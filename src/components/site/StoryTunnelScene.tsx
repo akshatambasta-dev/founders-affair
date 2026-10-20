@@ -455,6 +455,50 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         }
         scene.add(gear);
 
+        // --- 4-POINT SPECULAR STAR GLINTS (Ten Pound Feather optical glints) ---
+        // Sharp 4-ray optical glints reflecting off rotating metal drive teeth and gate keystones
+        const starMat = keep(new THREE.MeshBasicMaterial({
+          color: "#52d6a4",
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        }));
+        const vRayGeom = keep(new THREE.PlaneGeometry(0.12, 2.2));
+        const hRayGeom = keep(new THREE.PlaneGeometry(2.2, 0.12));
+        const coreGeom = keep(new THREE.PlaneGeometry(0.48, 0.48));
+
+        const createStarGlint = (scale = 1.0) => {
+          const group = new THREE.Group();
+          const v = new THREE.Mesh(vRayGeom, starMat);
+          const h = new THREE.Mesh(hRayGeom, starMat);
+          const c = new THREE.Mesh(coreGeom, starMat);
+          c.rotation.z = Math.PI / 4;
+          group.add(v, h, c);
+          group.scale.setScalar(scale);
+          return group;
+        };
+
+        // 4 cardinal glints stationed around the Gear Gate rim (top, bottom, left, right)
+        const gearGlints: THREE.Group[] = [];
+        const gearGlintAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        gearGlintAngles.forEach((angle) => {
+          const glint = createStarGlint(0.85);
+          glint.position.set(Math.cos(angle) * 10.7, Math.sin(angle) * 10.7, -6.5);
+          scene!.add(glint);
+          gearGlints.push(glint);
+        });
+
+        // 5 keystone glints placed on the apex of each C-Suite portal
+        const roleGlints: THREE.Group[] = [];
+        for (let r = 0; r < 5; r++) {
+          const glint = createStarGlint(0.72);
+          glint.position.set(0, 5.8, roleZ[r]);
+          scene!.add(glint);
+          roleGlints.push(glint);
+        }
+
         // --- SCENE 4: FIVE DISTINCT C-SUITE GATES (Z = -45 to -68) ---
         // Lighter green with black so each gate architecture and animation is strongly visible
         const roleZ = [-46, -51.5, -57, -62.5, -68];
@@ -737,6 +781,23 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             roleGates.forEach((gate, gIdx) => {
               gate.rotation.z = reduced ? 0 : Math.sin(t * 0.8 + gIdx) * 0.08;
             });
+
+            // Animate 4-point specular star glints (optical sparkle on gear teeth & portals)
+            if (!reduced) {
+              gearGlints.forEach((glint, idx) => {
+                const toothPass = Math.sin((gear ? gear.rotation.z : 0) * 18 + idx * (Math.PI / 2));
+                const flare = Math.max(0.2, toothPass);
+                const s = 0.5 + flare * 0.75;
+                glint.scale.set(s, s, 1);
+              });
+
+              roleGlints.forEach((glint, rIdx) => {
+                const dist = Math.abs(camZ - roleZ[rIdx]);
+                const prox = Math.max(0, 1 - dist / 18);
+                const flare = prox * (0.4 + Math.sin(t * 3.2 + rIdx * 1.4) * 0.5);
+                glint.scale.set(flare, flare, 1);
+              });
+            }
 
             // Fade opening warm light as mechanical iris opens
             if (openingWarmLight) {

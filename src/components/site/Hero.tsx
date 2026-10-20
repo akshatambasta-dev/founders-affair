@@ -108,6 +108,17 @@ export function Hero() {
         const next = clamp01(-rect.top / travel);
         progressRef.current = next;
         setProgress((current) => Math.abs(current - next) > 0.0025 ? next : current);
+
+        // Modulate opt-in ambient sound dynamically with scroll position (inspired by TPF audio synthesis)
+        if (audioRef.current) {
+          const { context, oscillators } = audioRef.current;
+          if (oscillators[0] && oscillators[1]) {
+            const targetLow = 54 + next * 12; // 54Hz -> 66Hz warm harmonic hum
+            const targetHigh = 81 + Math.sin(next * Math.PI * 4) * 9; // subtle melodic station resonance
+            oscillators[0].frequency.setTargetAtTime(targetLow, context.currentTime, 0.18);
+            oscillators[1].frequency.setTargetAtTime(targetHigh, context.currentTime, 0.18);
+          }
+        }
       });
     };
     update();
@@ -177,6 +188,15 @@ export function Hero() {
 
   return (
     <section id="top" ref={sectionRef} className="fa-scroll-hero fa-journey-hero theme-dark" style={sceneStyle}>
+      {/* Editorial tactile letterpress SVG filter (inspired by Ten Pound Feather) */}
+      <svg className="fa-svg-defs" aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", pointerEvents: "none" }}>
+        <defs>
+          <filter id="fa-letterpress" x="-4%" y="-8%" width="108%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04 0.05" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
       <div className="fa-scroll-sticky fa-journey-sticky">
         <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />
@@ -296,8 +316,15 @@ export function Hero() {
               <h2 className="fa-finale-quote" style={revealStylePersistent(chapterProgress, 0.1, 0.23)}>“For these two days, this wasn’t a college event.<br /><em>This was my company.</em>”</h2>
               <p className="fa-finale-manifesto" style={revealStylePersistent(chapterProgress, 0.28, 0.39)}>BUILD IT. RUN IT. MOVE IT. SELL IT. FUND IT.</p>
               <div className="fa-contact-row" style={revealStylePersistent(chapterProgress, 0.4, 0.51)}>
-                <a href="mailto:foundersaffair@gmail.com" className="fa-contact-pill fa-contact-pill--primary">foundersaffair@gmail.com</a>
-                <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer" className="fa-contact-pill">@eic.foundersaffair ↗</a>
+                <a href="mailto:foundersaffair@gmail.com" className="fa-contact-pill fa-contact-pill--primary">
+                  <span>foundersaffair@gmail.com</span>
+                  <svg className="fa-cta-paraph" viewBox="0 0 220 18" aria-hidden="true">
+                    <path d="M 6 11 C 45 13, 95 4, 145 12 C 175 17, 205 9, 214 7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </a>
+                <a href="https://www.instagram.com/eic.foundersaffair/" target="_blank" rel="noreferrer" className="fa-contact-pill">
+                  <span>@eic.foundersaffair ↗</span>
+                </a>
               </div>
               <span className="fa-registration-pending label-mono" style={revealStylePersistent(chapterProgress, 0.53, 0.63)}>Registration details to be announced</span>
             </div>
