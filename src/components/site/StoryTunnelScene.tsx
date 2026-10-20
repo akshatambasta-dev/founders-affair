@@ -1250,38 +1250,12 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
 
-            // Multi-directional cinematic camera flight path:
-            // S-curves horizontally (X), elevates and swoops over stations (Y), and banks dynamically (roll Z)
+            // Pure straight-line axial camera flight:
+            // Travels directly through the center of the tunnel in a straight line with zero rotation/banking
             const camZ = 38 - p * 190;
-            
-            // Gateway dampening: broad sweeping flight between stations, but smoothly aligned
-            // when passing through key gates: Opening Iris (p ≈ 0.05), Gear Gate (p ≈ 0.235), Finale Portal (p ≈ 0.95)
-            const gateDamp = Math.max(0.2, 1 - 0.45 * Math.exp(-Math.pow((p - 0.235) / 0.06, 2))
-                                             - 0.65 * Math.exp(-Math.pow((p - 0.05) / 0.05, 2))
-                                             - 0.55 * Math.exp(-Math.pow((p - 0.95) / 0.06, 2)));
-
-            // Smoothly align and center the camera straight ahead for the finale calm chamber
-            const finaleCenter = smooth(0.83, 0.96, p);
-
-            // Smoothly engage multi-directional camera flight as the opening gate opens (p = 0.01 -> 0.08)
-            const openingFlight = smooth(0.01, 0.08, p);
-
-            // Horizontal sway: swoops left towards Boardroom, right towards Stock Market, centers at Ring Triad & Finale
-            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp * (1 - finaleCenter) * openingFlight;
-            // Vertical pitch: dead center on opening iris at p=0, then elevates over gate and swoops across stations
-            const camY = (Math.sin(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp * (1 - finaleCenter) * openingFlight;
-            camera!.position.set(camX, camY, camZ);
-
-            // Dynamic look-ahead with banking & yaw towards upcoming stations, centered at Opening & Finale
-            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp * (1 - finaleCenter) * openingFlight;
-            const lookTargetY = Math.sin((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp * (1 - finaleCenter) * openingFlight;
-            camera!.lookAt(lookTargetX, lookTargetY, camZ - 22);
-
-            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly), leveling at Opening & Finale
-            if (!reduced) {
-              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp * (1 - finaleCenter) * openingFlight;
-              camera!.rotation.z = bankAngle;
-            }
+            camera!.position.set(0, 0, camZ);
+            camera!.lookAt(0, 0, camZ - 20);
+            camera!.rotation.z = 0;
 
             // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
             gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
