@@ -891,66 +891,154 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
         scene.add(boardroomGroup);
 
-        // --- SCENE 4b: DAY 01 — DEAL & TRADING CONCOURSE (Z = -74 to -92) ---
-        // Grounded executive trading desks in American walnut and dark bronze (zero floating tables or cubes)
-        dayOne = new THREE.Group(); dayOne.position.z = -74;
+        // --- SCENE 4b: DAY 01 — MARKET CRUCIBLE CONCOURSE (Z = -72 to -94) ---
+        // 3 Narrative Stages:
+        // 1. Acquisition Auction Arena (bidding rostrum, auction gavel, paddle consoles)
+        // 2. Boardroom Crisis Command Station (curved crisis plinth, multi-monitor array, alert status well)
+        // 3. Financial Market Crucible (architectural fluted walnut walls, brass valuation pillar bars, live ticker ribbons)
+        dayOne = new THREE.Group(); dayOne.position.z = -72;
 
-        // Grounded Trading Desks stationed on left and right sides
-        const tradingDeskGeom = keep(new THREE.BoxGeometry(4.2, 0.22, 1.6));
-        const tradingDeskBaseGeom = keep(new THREE.BoxGeometry(4.0, 1.6, 1.4));
-        const tradingBlotterGeom = keep(new THREE.PlaneGeometry(1.4, 0.8));
-        tradingBlotterGeom.rotateX(-Math.PI / 2);
-        const tradingTerminalGeom = keep(new THREE.BoxGeometry(0.85, 0.04, 0.55));
+        // --- STAGE 1: ACQUISITION AUCTION ARENA (Z = 0 local) ---
+        const auctionGroup = new THREE.Group();
+        auctionGroup.position.set(0, -3.2, 0);
 
-        const deskPositions = [
-          { x: -6.5, z: -4 },
-          { x: 6.5, z: -4 },
-          { x: -6.5, z: 4 },
-          { x: 6.5, z: 4 },
-        ];
+        // Grounded Walnut Bidding Rostrum
+        const rostrumPlinth = new THREE.Mesh(keep(new THREE.BoxGeometry(4.4, 0.45, 3.2)), darkSteel);
+        rostrumPlinth.position.y = 0.22;
+        const rostrumPlinthTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.48, 0.08, 3.28)), copperMat);
+        rostrumPlinthTrim.position.y = 0.45;
+        rostrumPlinth.add(rostrumPlinthTrim);
 
-        deskPositions.forEach((dp) => {
-          const dGroup = new THREE.Group();
-          dGroup.position.set(dp.x, -2.4, dp.z);
+        // Executive Auctioneer Lectern
+        const lectern = new THREE.Mesh(keep(new THREE.BoxGeometry(1.4, 1.6, 1.0)), walnutWood);
+        lectern.position.set(0, 1.25, -0.6);
+        const lecternSlant = new THREE.Mesh(keep(new THREE.BoxGeometry(1.44, 0.08, 0.8)), copperMat);
+        lecternSlant.rotation.x = 0.25;
+        lecternSlant.position.set(0, 0.85, 0.05);
+        lectern.add(lecternSlant);
 
-          const dTop = new THREE.Mesh(tradingDeskGeom, walnutWood);
-          const dBase = new THREE.Mesh(tradingDeskBaseGeom, darkSteel);
-          dBase.position.y = -0.9;
+        // Crafted Walnut & Brass Auction Gavel resting on strike block
+        const strikeBlock = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.24, 0.28, 0.08, 16)), darkSteel);
+        strikeBlock.position.set(0.35, 0.9, 0.1);
+        const gavelHandle = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.02, 0.025, 0.42, 8)), walnutWood);
+        gavelHandle.rotation.z = Math.PI / 2.4;
+        gavelHandle.position.set(0.35, 0.96, 0.1);
+        const gavelHead = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.065, 0.065, 0.22, 12)), copperMat);
+        gavelHead.rotation.x = Math.PI / 2;
+        gavelHead.position.set(0.52, 0.97, 0.1);
+        auctionGroup.add(rostrumPlinth, lectern, strikeBlock, gavelHandle, gavelHead);
 
-          // Warm copper/brass edge trim
-          const dTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.26, 0.05, 1.66)), copperMat);
-          dTrim.position.y = -0.09;
-          dTop.add(dTrim);
-
-          // Leather writing blotter
-          const blotterMat = keep(new THREE.MeshStandardMaterial({ color: "#1c1917", roughness: 0.55 }));
-          const blotter = new THREE.Mesh(tradingBlotterGeom, blotterMat);
-          blotter.position.set(0, 0.12, 0);
-          dTop.add(blotter);
-
-          // Flat executive tablet terminal
-          const terminalMat = keep(new THREE.MeshStandardMaterial({ color: "#18201d", metalness: 0.85, roughness: 0.2 }));
-          const terminal = new THREE.Mesh(tradingTerminalGeom, terminalMat);
-          terminal.position.set(0, 0.14, 0);
-          dTop.add(terminal);
-
-          dGroup.add(dTop, dBase);
-          dayOne!.add(dGroup);
-
-          // Warm ceiling downlight over trading desk
-          const deskDownlight = new THREE.PointLight("#fff5ea", 65, 8, 1.8);
-          deskDownlight.position.set(dp.x, 2.2, dp.z);
-          dayOne!.add(deskDownlight);
+        // Bidder Consoles on Left and Right sides
+        [-3.6, 3.6].forEach((xPos) => {
+          const bDesk = new THREE.Mesh(keep(new THREE.BoxGeometry(1.8, 1.4, 1.2)), walnutWood);
+          bDesk.position.set(xPos, 0.7, 0.5);
+          const bTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(1.86, 0.04, 1.26)), copperMat);
+          bTrim.position.y = 0.7;
+          bDesk.add(bTrim);
+          const bPaddle = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.18, 0.18, 0.03, 16)), gateLuminous);
+          bPaddle.position.set(0, 0.73, 0);
+          bPaddle.rotation.x = -Math.PI / 2;
+          bDesk.add(bPaddle);
+          auctionGroup.add(bDesk);
         });
 
-        // Flush Architectural Wall Ticker Strips along sides
-        const tickerGeom = keep(new THREE.BoxGeometry(0.08, 0.45, 18));
+        // Overhead Auction Arena Spotlight
+        const auctionSpot = new THREE.SpotLight(0xfff5ea, 240, 24, Math.PI / 3, 0.4, 1.2);
+        auctionSpot.position.set(0, 6.2, 0);
+        auctionSpot.target = lectern;
+        dayOne.add(auctionGroup, auctionSpot);
+
+        // --- STAGE 2: BOARDROOM CRISIS COMMAND STATION (Z = -9 local) ---
+        const crisisGroup = new THREE.Group();
+        crisisGroup.position.set(0, -3.2, -9);
+
+        // Curved Console Base in Walnut & Dark Steel
+        const crisisDesk = new THREE.Mesh(keep(new THREE.CylinderGeometry(3.6, 3.6, 1.4, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7)), walnutWood);
+        crisisDesk.position.y = 0.7;
+        const crisisTrim = new THREE.Mesh(keep(new THREE.CylinderGeometry(3.66, 3.66, 0.06, 32, 1, false, Math.PI * 0.14, Math.PI * 0.72)), copperMat);
+        crisisTrim.position.y = 0.72;
+        crisisDesk.add(crisisTrim);
+
+        // Recessed Center Amber Status Well (Simulating emergency market alerts)
+        const alertWell = new THREE.Mesh(
+          keep(new THREE.CylinderGeometry(1.2, 1.2, 0.12, 24)),
+          keep(new THREE.MeshStandardMaterial({ color: "#22160e", metalness: 0.8, roughness: 0.3 }))
+        );
+        alertWell.position.set(0, 0.74, -1.8);
+        const alertRing = new THREE.Mesh(
+          keep(new THREE.TorusGeometry(1.0, 0.04, 8, 32)),
+          keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }))
+        );
+        alertRing.rotateX(Math.PI / 2);
+        alertRing.position.y = 0.08;
+        alertWell.add(alertRing);
+        crisisGroup.add(crisisDesk, alertWell);
+
+        // 3 Emergency Decision Terminals mounted on curved copper armature
+        for (let m = 0; m < 3; m++) {
+          const mAngle = (m - 1) * 0.42;
+          const monitor = new THREE.Mesh(
+            keep(new THREE.BoxGeometry(0.95, 0.58, 0.05)),
+            keep(new THREE.MeshStandardMaterial({ color: "#161b18", metalness: 0.85, roughness: 0.25 }))
+          );
+          monitor.position.set(Math.sin(mAngle) * 2.8, 1.85, -Math.cos(mAngle) * 2.8 + 0.8);
+          monitor.rotation.y = -mAngle;
+          const stand = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.025, 0.025, 0.65, 8)), copperMat);
+          stand.position.set(0, -0.38, 0);
+          monitor.add(stand);
+          crisisGroup.add(monitor);
+        }
+
+        // Dedicated Crisis Amber Downlight
+        const crisisSpot = new THREE.PointLight("#ffecd6", 160, 16, 1.5);
+        crisisSpot.position.set(0, 3.8, -9);
+        dayOne.add(crisisGroup, crisisSpot);
+
+        // --- STAGE 3: FINANCIAL MARKET CRUCIBLE & VALUATION BOARD (Z = -18 local) ---
+        const marketGroup = new THREE.Group();
+        marketGroup.position.set(0, -3.2, -18);
+
+        // Left & Right Slat Wall Backdrops
+        const slatWallGeom = keep(new THREE.BoxGeometry(0.3, 7.8, 12));
+        const leftSlat = new THREE.Mesh(slatWallGeom, walnutWood);
+        leftSlat.position.set(-9.4, 3.9, 0);
+        const rightSlat = new THREE.Mesh(slatWallGeom, walnutWood);
+        rightSlat.position.set(9.4, 3.9, 0);
+        marketGroup.add(leftSlat, rightSlat);
+
+        // Flush Architectural LED Ticker Ribbons
+        const tickerGeom = keep(new THREE.BoxGeometry(0.06, 0.38, 11.8));
         const tickerMat = keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }));
         const leftTicker = new THREE.Mesh(tickerGeom, tickerMat);
-        leftTicker.position.set(-9.2, 0.5, 0);
+        leftTicker.position.set(-9.2, 4.2, 0);
         const rightTicker = new THREE.Mesh(tickerGeom, tickerMat);
-        rightTicker.position.set(9.2, 0.5, 0);
-        dayOne.add(leftTicker, rightTicker);
+        rightTicker.position.set(9.2, 4.2, 0);
+        marketGroup.add(leftTicker, rightTicker);
+
+        // Grounded Volumetric Valuation Pillars (representing live market valuation index bars)
+        const pillarMatBull = keep(new THREE.MeshStandardMaterial({
+          color: "#c88a50", metalness: 0.85, roughness: 0.24, emissive: "#4a2410", emissiveIntensity: 0.45,
+        }));
+        const pillarMatBear = keep(new THREE.MeshStandardMaterial({
+          color: "#2a1e16", metalness: 0.8, roughness: 0.4,
+        }));
+
+        const pillarHeights = [1.8, 3.2, 2.4, 4.2, 2.8, 3.8, 2.1, 4.6];
+        pillarHeights.forEach((h, pIdx) => {
+          const side = pIdx < 4 ? -1 : 1;
+          const zOffset = ((pIdx % 4) - 1.5) * 2.6;
+          const pGeom = keep(new THREE.BoxGeometry(0.55, h, 0.55));
+          const pMesh = new THREE.Mesh(pGeom, pIdx % 2 === 0 ? pillarMatBull : pillarMatBear);
+          pMesh.position.set(side * 8.6, h / 2, zOffset);
+          marketGroup.add(pMesh);
+        });
+
+        // Market Overhead Downlights
+        const marketSpot1 = new THREE.PointLight("#fff5ea", 140, 18, 1.4);
+        marketSpot1.position.set(-5.5, 4.2, -18);
+        const marketSpot2 = new THREE.PointLight("#fff5ea", 140, 18, 1.4);
+        marketSpot2.position.set(5.5, 4.2, -18);
+        dayOne.add(marketGroup, marketSpot1, marketSpot2);
 
         scene.add(dayOne);
 
@@ -1087,6 +1175,32 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         window.addEventListener("resize", onResize);
         (canvas as HTMLCanvasElement & { __cleanup?: () => void }).__cleanup = () => window.removeEventListener("resize", onResize);
 
+        // --- CINEMATIC EXECUTIVE CAMERA SPLINE ---
+        // S-curves horizontally (X), elevates and swoops over stations (Y), banks dynamically into turns (roll Z)
+        // Passes dead-center through portals: Opening Iris (Z = 28), Gear Gate (Z = -6.65), Boardroom Portals (Z = -44, -66),
+        // BUILD/MOVE/FUND Rings (Z = -116), Finale Iris (Z = -142).
+        const camPoints = [
+          new THREE.Vector3(0, 0, 38),             // 0.00: Opening aperture start
+          new THREE.Vector3(0, 0, 26.5),           // 0.06: Glide dead-center through Opening Iris (Z = 28)
+          new THREE.Vector3(1.35, -0.42, 10.5),    // 0.14: Bank right & dip low framing Gear Gate teeth & title
+          new THREE.Vector3(0, 0, -6.65),          // 0.235: Glide dead-center through Gear Gate inner hub
+          new THREE.Vector3(-1.65, 0.45, -18.5),   // 0.30: Swoop left to frame Atrium Milestone Plaque 1
+          new THREE.Vector3(1.5, 0.25, -28.5),     // 0.36: Bank right to frame Atrium Milestone Plaque 2
+          new THREE.Vector3(0, 0.15, -42),         // 0.41: Center alignment entering Boardroom Front Portal
+          new THREE.Vector3(-1.3, -0.85, -50),     // 0.46: Cinematic table-height sweep framing CEO & left chairs
+          new THREE.Vector3(1.15, -0.88, -58),     // 0.51: Glide across walnut table towards right chairs
+          new THREE.Vector3(0, -0.05, -66),        // 0.55: Ascend & exit through Boardroom Back Portal
+          new THREE.Vector3(1.7, 0.38, -74),       // 0.59: Bank right over Day 1 Acquisition Rostrum & Gavel
+          new THREE.Vector3(-1.5, -0.15, -82),     // 0.63: Dip left framing Day 1 Crisis Command Console
+          new THREE.Vector3(0.2, 0.28, -90),       // 0.67: Level off over Market Valuation Board
+          new THREE.Vector3(-1.2, -0.12, -100),    // 0.73: Sway over Day 2 Investor Partner Desk 1
+          new THREE.Vector3(1.15, -0.1, -108),     // 0.77: Sway over Day 2 Investor Partner Desk 2
+          new THREE.Vector3(0, 0, -116),           // 0.82: Dead center through BUILD / MOVE / FUND Rings
+          new THREE.Vector3(0, 0, -138),           // 0.92: Approach Finale Mechanical Iris
+          new THREE.Vector3(0, 0, -154),           // 1.00: Settle dead center in Finale Calm Sanctuary
+        ];
+        const camSpline = new THREE.CatmullRomCurve3(camPoints, false, "catmullrom", 0.35);
+
         // --- RENDER LOOP ---
         const render = (now: number) => {
           if (cancelled) return;
@@ -1097,36 +1211,19 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
 
-            // Multi-directional cinematic camera flight path:
-            // S-curves horizontally (X), elevates and swoops over stations (Y), and banks dynamically (roll Z)
-            const camZ = 38 - p * 190;
-            
-            // Gateway dampening: broad sweeping flight between stations, but smoothly aligned
-            // when passing through key gates: Opening Iris (p ≈ 0.05), Gear Gate (p ≈ 0.235), Finale Portal (p ≈ 0.95)
-            const gateDamp = Math.max(0.2, 1 - 0.45 * Math.exp(-Math.pow((p - 0.235) / 0.06, 2))
-                                             - 0.65 * Math.exp(-Math.pow((p - 0.05) / 0.05, 2))
-                                             - 0.55 * Math.exp(-Math.pow((p - 0.95) / 0.06, 2)));
+            // Spatially choreographed cinematic camera path along Catmull-Rom spline
+            const camPos = camSpline.getPointAt(p);
+            camera!.position.copy(camPos);
 
-            // Smoothly align and center the camera straight ahead for the finale calm chamber
-            const finaleCenter = smooth(0.83, 0.96, p);
+            // Dynamic look-ahead along the spline curve with lead offset
+            const lookP = Math.min(1, p + 0.032);
+            const lookTarget = camSpline.getPointAt(lookP);
+            camera!.lookAt(lookTarget.x, lookTarget.y, lookTarget.z);
 
-            // Smoothly engage multi-directional camera flight as the opening gate opens (p = 0.01 -> 0.08)
-            const openingFlight = smooth(0.01, 0.08, p);
-
-            // Horizontal sway: swoops left towards Boardroom, right towards Stock Market, centers at Ring Triad & Finale
-            const camX = (Math.sin(p * Math.PI * 3.2) * 1.85 + Math.sin(p * Math.PI * 1.5) * 0.95) * gateDamp * (1 - finaleCenter) * openingFlight;
-            // Vertical pitch: dead center on opening iris at p=0, then elevates over gate and swoops across stations
-            const camY = (Math.sin(p * Math.PI * 2.8) * 0.85 + Math.sin(p * Math.PI * 5.0) * 0.35) * gateDamp * (1 - finaleCenter) * openingFlight;
-            camera!.position.set(camX, camY, camZ);
-
-            // Dynamic look-ahead with banking & yaw towards upcoming stations, centered at Opening & Finale
-            const lookTargetX = Math.sin((p + 0.04) * Math.PI * 3.2) * 1.1 * gateDamp * (1 - finaleCenter) * openingFlight;
-            const lookTargetY = Math.sin((p + 0.04) * Math.PI * 2.8) * 0.45 * gateDamp * (1 - finaleCenter) * openingFlight;
-            camera!.lookAt(lookTargetX, lookTargetY, camZ - 22);
-
-            // Camera roll / bank into horizontal curves (like an aerial drone / cinematic dolly), leveling at Opening & Finale
+            // Dynamic camera roll / bank into horizontal turns (drone/dolly roll)
             if (!reduced) {
-              const bankAngle = -Math.cos(p * Math.PI * 3.2) * 0.075 * gateDamp * (1 - finaleCenter) * openingFlight;
+              const tangent = camSpline.getTangentAt(p);
+              const bankAngle = -tangent.x * 0.14;
               camera!.rotation.z = bankAngle;
             }
 

@@ -641,8 +641,8 @@ footer a:hover { color:#f7f4d5; }
 /* Immersive WebGL journey — a single continuous scene controlled by scroll. */
 .fa-journey-hero {
   position: relative;
-  height: 900svh;
-  min-height: 900vh;
+  height: 1200svh;
+  min-height: 1200vh;
   overflow: clip;
   width: 100%;
   background: #080a09;
@@ -1266,7 +1266,7 @@ footer a:hover { color:#f7f4d5; }
 .fa-journey-panel--opening { animation: none; }
 .fa-journey-panel--brand { animation: none; }
 @media (max-width: 767px) {
-  .fa-journey-hero { height: 900svh; min-height: 900vh; overflow: clip; }
+  .fa-journey-hero { height: 1250svh; min-height: 1250vh; overflow: clip; }
   .fa-journey-top { top: 1rem; left: 1rem; right: 1rem; justify-content: flex-end; }
   .fa-journey-bottom { left: 1rem; right: 1rem; gap: .45rem; font-size: .43rem; letter-spacing: .07em; }
   .fa-journey-wordmark { font-size: 1rem; }
@@ -1420,7 +1420,7 @@ header.theme-dark {
 .fa-registration-pending { font-size: clamp(.44rem,.55vw,.53rem); }
 
 @media (max-width: 767px) {
-  .fa-journey-hero { height: 1020svh; min-height: 1020vh; }
+  .fa-journey-hero { height: 1250svh; min-height: 1250vh; }
   .fa-journey-content {
     inset: 7.4rem .9rem 6rem;
     padding-block: .3rem;
