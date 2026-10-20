@@ -616,28 +616,8 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         });
 
         // --- SCENE 4: THE EXECUTIVE BOARDROOM ROTUNDA (Z = -44 to -68) ---
-        // Tunnel expands into a cavernous circular boardroom rotunda with a central round table and 5 C-suite chairs
         boardroomGroup = new THREE.Group();
         boardroomGroup.position.set(0, 0, -55);
-
-        // Overhead circular rotunda structural truss
-        const rotundaTruss = ring(12.8, 0.28, darkSteel, 0, 72);
-        const rotundaCopperRing = ring(12.2, 0.12, copperMat, -0.15, 72);
-        boardroomGroup.add(rotundaTruss, rotundaCopperRing);
-
-        // 12 Colonnade fluted pillars around the boardroom perimeter
-        const colPillarGeom = keep(new THREE.CylinderGeometry(0.35, 0.42, 13, 16));
-        for (let c = 0; c < 12; c++) {
-          const a = (c / 12) * Math.PI * 2;
-          const col = new THREE.Mesh(colPillarGeom, c % 2 === 0 ? darkSteel : deepBlack);
-          col.position.set(Math.cos(a) * 12.8, 0, Math.sin(a) * 12.8);
-          const cap = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.48, 0.48, 0.2, 16)), copperMat);
-          cap.position.y = 6.4;
-          const base = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.52, 0.52, 0.25, 16)), copperMat);
-          base.position.y = -6.4;
-          col.add(cap, base);
-          boardroomGroup.add(col);
-        }
 
         // Overhead central executive dome spotlight
         const boardroomSpot = new THREE.PointLight("#ede7d9", 95, 28, 2);
@@ -828,21 +808,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           floatingAssets.push(assetMesh);
         }
 
-        // Flanking 3D Financial Candlestick bars in the canyon
-        const candleGeom = keep(new THREE.BoxGeometry(.42, 1, .42));
-        const barHeights = [2.2, 4.1, 1.6, 5.4, 3.2, 4.8, 2.7, 6.1, 3.8, 5.0];
-        for (let i = 0; i < barHeights.length; i++) {
-          const h = barHeights[i] ?? 3.0;
-          const isUp = i % 3 !== 1;
-          const barMesh = new THREE.Mesh(candleGeom, isUp ? gateLuminous : darkSteel);
-          const side = i % 2 === 0 ? -1 : 1;
-          const x = side * (6.0 + (i * 0.4));
-          const zOffset = (i - 5) * 1.8 - 12; // spans into stock canyon
-          barMesh.scale.set(1, h, 1);
-          barMesh.position.set(x, -6.5 + (h / 2), zOffset);
-          dayOne.add(barMesh);
-          stockBars.push(barMesh);
-        }
         scene.add(dayOne);
 
         // --- SCENE 4c: DAY 02 — INVESTOR MARKETPLACE & BRAND WAR (Z = -98 to -115) ---
@@ -1038,17 +1003,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
                 const baseRot = (index / finaleIris!.numBlades) * Math.PI * 2 + Math.PI / 2;
                 blade.rotation.z = baseRot + (finaleOpen * 1.35);
               });
-            }
-
-            // Animate Dynamic Financial Candlestick Pulses (Stock Market fluctuation)
-            if (!reduced && stockBars.length > 0) {
-              for (let s = 0; s < stockBars.length; s++) {
-                const bar = stockBars[s];
-                if (bar) {
-                  const pulse = 1 + Math.sin(t * 2.4 + s * 1.1) * 0.12;
-                  bar.scale.y = pulse * (2 + (s % 4));
-                }
-              }
             }
 
             // Animate Simulation Telemetry HUD & Laser Scanners
