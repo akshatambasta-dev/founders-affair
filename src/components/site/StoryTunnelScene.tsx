@@ -899,36 +899,63 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         dayOne = new THREE.Group(); dayOne.position.z = -72;
 
         // --- STAGE 1: ACQUISITION AUCTION ARENA (Z = 0 local) ---
+        // Inspired by Sir Jony Ive (LoveFrom)'s sculpted monolithic rostrum for Christie's
         const auctionGroup = new THREE.Group();
         auctionGroup.position.set(0, -3.2, 0);
 
-        // Grounded Walnut Bidding Rostrum
-        const rostrumPlinth = new THREE.Mesh(keep(new THREE.BoxGeometry(4.4, 0.45, 3.2)), darkSteel);
-        rostrumPlinth.position.y = 0.22;
-        const rostrumPlinthTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.48, 0.08, 3.28)), copperMat);
-        rostrumPlinthTrim.position.y = 0.45;
+        // Grounded Architectural Rostrum Plinth with stepped bronze reveal
+        const rostrumPlinth = new THREE.Mesh(keep(new THREE.BoxGeometry(4.6, 0.38, 3.4)), darkSteel);
+        rostrumPlinth.position.y = 0.19;
+        const rostrumPlinthTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(4.72, 0.06, 3.52)), copperMat);
+        rostrumPlinthTrim.position.y = 0.38;
         rostrumPlinth.add(rostrumPlinthTrim);
 
-        // Executive Auctioneer Lectern
-        const lectern = new THREE.Mesh(keep(new THREE.BoxGeometry(1.4, 1.6, 1.0)), walnutWood);
-        lectern.position.set(0, 1.25, -0.6);
-        const lecternSlant = new THREE.Mesh(keep(new THREE.BoxGeometry(1.44, 0.08, 0.8)), copperMat);
-        lecternSlant.rotation.x = 0.25;
-        lecternSlant.position.set(0, 0.85, 0.05);
-        lectern.add(lecternSlant);
+        // Sculptural Monolithic Curved Rostrum (curved walnut body with continuous organic contour)
+        const rostrumBody = new THREE.Mesh(
+          keep(new THREE.CylinderGeometry(0.92, 1.15, 1.7, 32, 1, false, -Math.PI * 0.1, Math.PI * 1.2)),
+          walnutWood
+        );
+        rostrumBody.position.set(0, 1.22, -0.5);
+        rostrumBody.rotation.y = Math.PI * 0.5;
 
-        // Crafted Walnut & Brass Auction Gavel resting on strike block
-        const strikeBlock = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.24, 0.28, 0.08, 16)), darkSteel);
-        strikeBlock.position.set(0.35, 0.9, 0.1);
-        const gavelHandle = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.02, 0.025, 0.42, 8)), walnutWood);
-        gavelHandle.rotation.z = Math.PI / 2.4;
-        gavelHandle.position.set(0.35, 0.96, 0.1);
-        const gavelHead = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.065, 0.065, 0.22, 12)), copperMat);
+        // Precision-machined champagne brass reading rim tracing the rostrum curve
+        const rostrumRim = new THREE.Mesh(
+          keep(new THREE.CylinderGeometry(0.96, 0.96, 0.06, 32, 1, false, -Math.PI * 0.1, Math.PI * 1.2)),
+          copperMat
+        );
+        rostrumRim.position.y = 0.86;
+        rostrumBody.add(rostrumRim);
+
+        // Slanted walnut & brass manuscript deck for auction catalogue
+        const readingDeck = new THREE.Mesh(keep(new THREE.BoxGeometry(0.92, 0.05, 0.65)), walnutWood);
+        readingDeck.rotation.x = 0.28;
+        readingDeck.position.set(0, 0.88, 0.1);
+        const deckLip = new THREE.Mesh(keep(new THREE.BoxGeometry(0.94, 0.04, 0.05)), copperMat);
+        deckLip.position.set(0, 0.02, 0.32);
+        readingDeck.add(deckLip);
+        rostrumBody.add(readingDeck);
+
+        // Flush-mounted machined dark steel circular anvil with brass bezel ring
+        const strikeBlock = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.22, 0.24, 0.06, 24)), darkSteel);
+        strikeBlock.position.set(0.32, 0.94, 0.05);
+        const strikeBezel = new THREE.Mesh(keep(new THREE.TorusGeometry(0.24, 0.02, 8, 24)), copperMat);
+        strikeBezel.rotation.x = Math.PI / 2;
+        strikeBezel.position.y = 0.03;
+        strikeBlock.add(strikeBezel);
+
+        // Precision Walnut & Brass Auction Gavel resting poised on strike block
+        const gavelHandle = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.018, 0.024, 0.44, 12)), walnutWood);
+        gavelHandle.rotation.z = Math.PI / 2.35;
+        gavelHandle.position.set(0.32, 1.0, 0.05);
+        const gavelHead = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.06, 0.06, 0.22, 16)), copperMat);
         gavelHead.rotation.x = Math.PI / 2;
-        gavelHead.position.set(0.52, 0.97, 0.1);
-        auctionGroup.add(rostrumPlinth, lectern, strikeBlock, gavelHandle, gavelHead);
+        gavelHead.position.set(0.48, 1.01, 0.05);
+        const gavelRings = new THREE.Mesh(keep(new THREE.TorusGeometry(0.063, 0.012, 8, 16)), darkSteel);
+        gavelHead.add(gavelRings);
 
-        // Bidder Consoles on Left and Right sides
+        auctionGroup.add(rostrumPlinth, rostrumBody, strikeBlock, gavelHandle, gavelHead);
+
+        // Bidder Consoles on Left and Right sides (Walnut with recessed copper edge)
         [-3.6, 3.6].forEach((xPos) => {
           const bDesk = new THREE.Mesh(keep(new THREE.BoxGeometry(1.8, 1.4, 1.2)), walnutWood);
           bDesk.position.set(xPos, 0.7, 0.5);
@@ -945,7 +972,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         // Overhead Auction Arena Spotlight
         const auctionSpot = new THREE.SpotLight(0xfff5ea, 240, 24, Math.PI / 3, 0.4, 1.2);
         auctionSpot.position.set(0, 6.2, 0);
-        auctionSpot.target = lectern;
+        auctionSpot.target = rostrumBody;
         dayOne.add(auctionGroup, auctionSpot);
 
         // --- STAGE 2: BOARDROOM CRISIS COMMAND STATION (Z = -9 local) ---
@@ -998,22 +1025,39 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const marketGroup = new THREE.Group();
         marketGroup.position.set(0, -3.2, -18);
 
-        // Left & Right Slat Wall Backdrops
-        const slatWallGeom = keep(new THREE.BoxGeometry(0.3, 7.8, 12));
-        const leftSlat = new THREE.Mesh(slatWallGeom, walnutWood);
-        leftSlat.position.set(-9.4, 3.9, 0);
-        const rightSlat = new THREE.Mesh(slatWallGeom, walnutWood);
-        rightSlat.position.set(9.4, 3.9, 0);
-        marketGroup.add(leftSlat, rightSlat);
+        // Fluted Acoustic Walnut Wall Panelling with integrated dark backing
+        const wallBackingGeom = keep(new THREE.BoxGeometry(0.12, 7.8, 12));
+        const leftBacking = new THREE.Mesh(wallBackingGeom, darkSteel);
+        leftBacking.position.set(-9.5, 3.9, 0);
+        const rightBacking = new THREE.Mesh(wallBackingGeom, darkSteel);
+        rightBacking.position.set(9.5, 3.9, 0);
+        marketGroup.add(leftBacking, rightBacking);
 
-        // Flush Architectural LED Ticker Ribbons
-        const tickerGeom = keep(new THREE.BoxGeometry(0.06, 0.38, 11.8));
+        // Architectural fluted timber vertical ribs lining both sides
+        const ribGeom = keep(new THREE.BoxGeometry(0.18, 7.6, 0.22));
+        for (let r = 0; r < 24; r++) {
+          const zOffset = (r - 11.5) * 0.48;
+          const leftRib = new THREE.Mesh(ribGeom, walnutWood);
+          leftRib.position.set(-9.38, 3.9, zOffset);
+          const rightRib = new THREE.Mesh(ribGeom, walnutWood);
+          rightRib.position.set(9.38, 3.9, zOffset);
+          marketGroup.add(leftRib, rightRib);
+        }
+
+        // Flush Architectural LED Ticker Recesses (embedded into dark steel channel housings)
+        const channelGeom = keep(new THREE.BoxGeometry(0.12, 0.52, 11.8));
+        const leftChannel = new THREE.Mesh(channelGeom, darkSteel);
+        leftChannel.position.set(-9.28, 4.2, 0);
+        const rightChannel = new THREE.Mesh(channelGeom, darkSteel);
+        rightChannel.position.set(9.28, 4.2, 0);
+
+        const tickerGeom = keep(new THREE.BoxGeometry(0.06, 0.36, 11.6));
         const tickerMat = keep(new THREE.MeshBasicMaterial({ color: "#d49b63" }));
         const leftTicker = new THREE.Mesh(tickerGeom, tickerMat);
-        leftTicker.position.set(-9.2, 4.2, 0);
+        leftTicker.position.set(-9.24, 4.2, 0);
         const rightTicker = new THREE.Mesh(tickerGeom, tickerMat);
-        rightTicker.position.set(9.2, 4.2, 0);
-        marketGroup.add(leftTicker, rightTicker);
+        rightTicker.position.set(9.24, 4.2, 0);
+        marketGroup.add(leftChannel, rightChannel, leftTicker, rightTicker);
 
         // Grounded Volumetric Valuation Pillars (representing live market valuation index bars)
         const pillarMatBull = keep(new THREE.MeshStandardMaterial({
@@ -1050,12 +1094,18 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const innerConclaveRing = ring(5.0, .08, copperMat, -.15, 80);
         dayTwo.add(conclavePortal, innerConclaveRing);
 
-        // 4 Grounded Investor Partner Desks with physical leather document portfolios
+        // Bespoke Partner Desks with leather blotters, dossier straps & brass closure studs
         const portfolioGeom = keep(new THREE.BoxGeometry(1.2, 0.06, 0.85));
         const portfolioMat = keep(new THREE.MeshStandardMaterial({
           color: "#5c361e", map: leatherMap, metalness: 0.1, roughness: 0.45,
         }));
-        const portfolioClaspGeom = keep(new THREE.BoxGeometry(0.18, 0.07, 0.08));
+        const blotterGeom = keep(new THREE.BoxGeometry(2.2, 0.02, 1.05));
+        const blotterMat = keep(new THREE.MeshStandardMaterial({
+          color: "#2b180d", metalness: 0.08, roughness: 0.55,
+        }));
+        const strapGeom = keep(new THREE.BoxGeometry(0.06, 0.07, 0.87));
+        const studGeom = keep(new THREE.CylinderGeometry(0.022, 0.022, 0.08, 12));
+        const plaqueGeom = keep(new THREE.BoxGeometry(0.24, 0.07, 0.14));
 
         for (let st = 0; st < 4; st++) {
           const stallGroup = new THREE.Group();
@@ -1063,7 +1113,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           const zPos = st < 2 ? -4 : 4;
           stallGroup.position.set(side * 6.5, -2.4, zPos);
 
-          // American Walnut Desk with heavy architectural base
+          // American Walnut Desk with heavy architectural base and copper reveal
           const desk = new THREE.Mesh(keep(new THREE.BoxGeometry(3.0, 0.22, 1.4)), walnutWood);
           const deskTrim = new THREE.Mesh(keep(new THREE.BoxGeometry(3.06, 0.05, 1.46)), copperMat);
           deskTrim.position.y = -0.09;
@@ -1073,14 +1123,27 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           deskLegs.position.y = -0.9;
           stallGroup.add(desk, deskLegs);
 
-          // Grounded Leather Document Portfolio resting flat on desk (zero floating envelopes)
+          // Recessed executive leather blotter resting flat on walnut surface
+          const blotter = new THREE.Mesh(blotterGeom, blotterMat);
+          blotter.position.set(0, 0.12, 0);
+          stallGroup.add(blotter);
+
+          // Bespoke Leather Document Portfolio with dual straps, brass studs, and monogram plaque
           const portfolio = new THREE.Mesh(portfolioGeom, portfolioMat);
-          portfolio.position.set(0, 0.14, 0);
+          portfolio.position.set(0, 0.16, 0);
           portfolio.rotation.y = side * 0.12;
 
-          const clasp = new THREE.Mesh(portfolioClaspGeom, copperMat);
-          clasp.position.set(0, 0.035, 0.42);
-          portfolio.add(clasp);
+          [-0.38, 0.38].forEach((sX) => {
+            const strap = new THREE.Mesh(strapGeom, blotterMat);
+            strap.position.set(sX, 0.005, 0);
+            const stud = new THREE.Mesh(studGeom, copperMat);
+            stud.position.set(sX, 0.038, 0.38);
+            portfolio.add(strap, stud);
+          });
+
+          const plaque = new THREE.Mesh(plaqueGeom, copperMat);
+          plaque.position.set(0, 0.035, 0);
+          portfolio.add(plaque);
 
           stallGroup.add(portfolio);
           dayTwo.add(stallGroup);
