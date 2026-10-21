@@ -48,12 +48,10 @@ function revealStyle(
   const exiting = smoothStep(exitStart, exitEnd, progress);
   const opacity = entering * (1 - exiting);
   const translateY = (1 - entering) * 18 - exiting * 10;
-  const blur = (1 - entering) * 5 + exiting * 3;
   return {
     opacity,
     transform: `translate3d(0, ${translateY.toFixed(1)}px, 0)`,
-    filter: `blur(${blur.toFixed(1)}px)`,
-    willChange: "opacity, transform, filter",
+    willChange: "opacity, transform",
   };
 }
 
@@ -64,12 +62,10 @@ function revealStylePersistent(
 ): CSSProperties {
   const entering = smoothStep(start, end, progress);
   const translateY = (1 - entering) * 18;
-  const blur = (1 - entering) * 5;
   return {
     opacity: entering,
     transform: `translate3d(0, ${translateY.toFixed(1)}px, 0)`,
-    filter: `blur(${blur.toFixed(1)}px)`,
-    willChange: "opacity, transform, filter",
+    willChange: "opacity, transform",
   };
 }
 
@@ -107,7 +103,7 @@ export function Hero() {
         const travel = Math.max(1, section.offsetHeight - window.innerHeight);
         const next = clamp01(-rect.top / travel);
         progressRef.current = next;
-        setProgress((current) => Math.abs(current - next) > 0.0025 ? next : current);
+        setProgress((current) => Math.abs(current - next) > 0.0035 ? next : current);
 
         // Modulate opt-in ambient sound dynamically with scroll position (inspired by TPF audio synthesis)
         if (audioRef.current) {
@@ -188,15 +184,6 @@ export function Hero() {
 
   return (
     <section id="top" ref={sectionRef} className="fa-scroll-hero fa-journey-hero theme-dark" style={sceneStyle}>
-      {/* Editorial tactile letterpress SVG filter (inspired by Ten Pound Feather) */}
-      <svg className="fa-svg-defs" aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", pointerEvents: "none" }}>
-        <defs>
-          <filter id="fa-letterpress" x="-4%" y="-8%" width="108%" height="116%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.04 0.05" numOctaves="2" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
       <div className="fa-scroll-sticky fa-journey-sticky">
         <div className="fa-tunnel-fallback" aria-hidden="true" />
         <StoryTunnelScene progressRef={progressRef} reducedMotionRef={reducedMotionRef} />

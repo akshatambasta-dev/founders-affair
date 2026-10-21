@@ -909,7 +909,6 @@ footer a:hover { color:#f7f4d5; }
   line-height: 0.76;
   text-wrap: balance;
   text-shadow: none;
-  filter: url(#fa-letterpress);
 }
 .fa-main-title span {
   display: block;
@@ -957,7 +956,6 @@ footer a:hover { color:#f7f4d5; }
   text-wrap: balance;
   color: #f7f4d5;
   text-shadow: none;
-  filter: url(#fa-letterpress);
 }
 .fa-statement em,
 .fa-panel-heading em {
@@ -994,7 +992,6 @@ footer a:hover { color:#f7f4d5; }
   text-transform: uppercase;
   color: #f7f4d5;
   text-shadow: none;
-  filter: url(#fa-letterpress);
 }
 .fa-role-grid {
   display: grid;
@@ -1147,7 +1144,6 @@ footer a:hover { color:#f7f4d5; }
   text-wrap: balance;
   color: #f7f4d5;
   text-shadow: none;
-  filter: url(#fa-letterpress);
 }
 .fa-finale-quote em {
   color: #f7f4d5;

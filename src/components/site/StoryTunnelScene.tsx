@@ -311,12 +311,12 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
       try {
         const small = window.innerWidth < 768;
         renderer = new THREE.WebGLRenderer({
-          canvas, alpha: true, antialias: !small, powerPreference: "high-performance",
+          canvas, alpha: false, antialias: !small, powerPreference: "high-performance",
           preserveDrawingBuffer: false,
         });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.0 : 1.35));
         renderer.setSize(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight, false);
-        renderer.setClearColor(0x000000, 0);
+        renderer.setClearColor(0x080a08, 1);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.1;
@@ -412,18 +412,13 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         scene.add(openingWarmLight);
 
         const addLight = (color: string, power: number, distance: number, pos: [number, number, number]) => {
-          const light = new THREE.PointLight(color, power, distance, 2);
+          const light = new THREE.PointLight(color, power, distance, 1.8);
           light.position.set(...pos); scene?.add(light);
         };
-        addLight("#fff6ea", 95, 36, [0, 2.5, -5]);
-        addLight("#ffdcb0", 90, 36, [-5, 3.5, -25]);
-        addLight("#fff4e0", 85, 32, [0, 2.5, -36]);
-        addLight("#fff4e0", 85, 32, [0, 2.5, -72]);
-        addLight("#ffdcb0", 90, 36, [0, 2.5, -88]);
-        addLight("#fff6ea", 95, 38, [0, 2.5, -106]);
-        addLight("#ffdcb0", 90, 38, [-5, 2.5, -125]);
-        addLight("#fff6ea", 95, 42, [0, 2.5, -148]);
-        addLight("#ffdcb0", 80, 32, [0, 2, -159]);
+        addLight("#fff6ea", 110, 48, [0, 2.5, -10]);
+        addLight("#ffdcb0", 100, 52, [0, 2.5, -55]);
+        addLight("#fff4e0", 100, 52, [0, 2.5, -105]);
+        addLight("#ffdcb0", 95, 48, [0, 2.5, -150]);
 
         // --- CONTINUOUS TUNNEL SHELL ---
         const shellGeometry = keep(new THREE.CylinderGeometry(12.7, 12.7, 138, 64, 1, true));
@@ -454,9 +449,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           if (milestone) {
             const inner = ring(11.86, .04, gateLuminous, z - .11);
             keep(inner.geometry); scene.add(inner);
-            const milestoneGlow = new THREE.PointLight("#d49b63", 22, 14, 2);
-            milestoneGlow.position.set(0, 0, z);
-            scene.add(milestoneGlow);
           }
           if (i % 2 === 0) {
             const geom = keep(new THREE.BoxGeometry(.32, 1.2, .5));
@@ -616,8 +608,9 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             plaque.rotation.y = item.rotY;
             scene!.add(plaque);
 
-            // Warm architectural sconce light directly above the plaque
-            const sconce = new THREE.PointLight("#fff5ea", 65, 8, 1.8);
+            // Warm architectural luminous sconce fixture directly above the plaque
+            const sconceGeom = keep(new THREE.BoxGeometry(0.32, 0.08, 0.16));
+            const sconce = new THREE.Mesh(sconceGeom, gateLuminous);
             sconce.position.set(item.pos[0] * 0.85, item.pos[1] + 1.8, item.pos[2]);
             scene!.add(sconce);
           }
@@ -882,11 +875,6 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
           tablet.position.set(cfg.blotterPos[0], cfg.blotterPos[1] + 0.02, cfg.blotterPos[2]);
           tablet.rotation.y = cfg.blotterRotY;
           tableTop.add(tablet);
-
-          // Dedicated warm architectural downlight directly above each chair
-          const chairDownlight = new THREE.PointLight(0xfff6ea, 65, 8, 1.8);
-          chairDownlight.position.set(cfg.pos[0], 2.2, cfg.pos[2]);
-          boardroomGroup!.add(chairDownlight);
         });
 
         scene.add(boardroomGroup);
@@ -1147,12 +1135,10 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
 
           stallGroup.add(portfolio);
           dayTwo.add(stallGroup);
-
-          // Warm architectural studio downlight on investor desk
-          const investorSpot = new THREE.PointLight("#fff5ea", 70, 9, 1.8);
-          investorSpot.position.set(side * 6.5, 2.2, zPos);
-          dayTwo.add(investorSpot);
         }
+        const pavilionSpot = new THREE.PointLight("#fff5ea", 140, 24, 1.6);
+        pavilionSpot.position.set(0, 3.2, 0);
+        dayTwo.add(pavilionSpot);
         scene.add(dayTwo);
 
         // --- SCENE 5: THREE-RING TRIPTYCH (BUILD / MOVE / FUND) (Z = -116) ---
@@ -1244,8 +1230,7 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         const render = (now: number) => {
           if (cancelled) return;
           const reduced = reducedMotionRef.current;
-          const fpsInterval = window.innerWidth < 768 ? 1000 / 30 : 1000 / 45;
-          if (!document.hidden && now - lastFrame >= fpsInterval) {
+          if (!document.hidden) {
             lastFrame = now;
             const p = progressRef.current;
             const t = reduced ? 0 : now / 1000;
@@ -1256,6 +1241,33 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
             camera!.position.set(0, 0, camZ);
             camera!.lookAt(0, 0, camZ - 20);
             camera!.rotation.z = 0;
+
+            // Smart distance-based station range culling:
+            // Drastically reduces active draw calls, matrix updates, and light evaluations on mobile GPUs
+            if (openingIris) {
+              openingIris.group.visible = camZ > -10;
+            }
+            if (gear) {
+              gear.visible = camZ > -42;
+            }
+            if (boardroomGroup) {
+              boardroomGroup.visible = camZ < -15 && camZ > -92;
+            }
+            if (dayOne) {
+              dayOne.visible = camZ < -44 && camZ > -120;
+            }
+            if (dayTwo) {
+              dayTwo.visible = camZ < -72 && camZ > -144;
+            }
+            if (ringTrio) {
+              ringTrio.visible = camZ < -84;
+            }
+            if (endPortal) {
+              endPortal.visible = camZ < -110;
+            }
+            if (finaleIris) {
+              finaleIris.group.visible = camZ < -110;
+            }
 
             // Gear rotation: Continuous mechanical spin + strong acceleration from scroll movement
             gear!.rotation.z = reduced ? 0 : (t * 0.75) + (p * Math.PI * 14.0);
