@@ -1224,8 +1224,19 @@ export function StoryTunnelScene({ progressRef, reducedMotionRef }: SceneRefs) {
         window.addEventListener("resize", onResize);
         (canvas as HTMLCanvasElement & { __cleanup?: () => void }).__cleanup = () => window.removeEventListener("resize", onResize);
 
-        // --- CINEMATIC EXECUTIVE CAMERA SPLINE ---
-        // S-curves horizontally (X), elevates and swoops over stations (Y), banks dynamically into turns (roll Z)
+        // Pre-compile all scene materials, shaders, and textures into GPU VRAM at boot time.
+        // This warms up the WebGL driver cache and eliminates shader compilation hitches during the first scroll.
+        try {
+          if (weaveMap) renderer.initTexture(weaveMap);
+          if (metalMap) renderer.initTexture(metalMap);
+          if (floorMap) renderer.initTexture(floorMap);
+          if (woodMap) renderer.initTexture(woodMap);
+          if (leatherMap) renderer.initTexture(leatherMap);
+          renderer.compile(scene, camera);
+        } catch (e) {
+          console.warn("Shader pre-warming note:", e);
+        }
+
         // --- RENDER LOOP ---
         const render = (now: number) => {
           if (cancelled) return;
